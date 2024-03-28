@@ -16,6 +16,12 @@ spec:
     spec:
       imagePullSecrets:
         {{- toYaml $.Values.imagePullSecrets | nindent 8 }}
+      {{- if ($serviceConfig.development).enabled }}
+      securityContext:
+        runAsUser: {{ $.Values.localUid }}
+        runAsGroup: {{ $.Values.localGid }}
+        fsGroup: {{ $.Values.localGid }}
+      {{- end }}
       containers:
         - name: {{ $serviceName }}
           image: {{ $serviceConfig.image }}
@@ -26,7 +32,6 @@ spec:
           volumeMounts:
             - mountPath: /app
               name: {{ $serviceName }}-code
-              readOnly: true
           {{- end }}
       {{- if ($serviceConfig.development).enabled }}
       volumes:

@@ -14,7 +14,10 @@ import * as process from 'process';
             gateway: {
                 debug: process.env.NODE_ENV !== 'production',
                 supergraphSdl: new IntrospectAndCompose({
-                    subgraphs: [{ name: 'posts', url: 'http://posts:3000/graphql' }],
+                    subgraphs: [
+                        { name: 'auth', url: 'http://auth:3000/graphql' },
+                        { name: 'posts', url: 'http://posts:3000/graphql' },
+                    ],
                     pollIntervalInMs: 10_000,
                     subgraphHealthCheck: true,
                 }),

@@ -5,6 +5,7 @@ import { GraphQLDateTimeISO, GraphQLUUID } from 'graphql-scalars';
 import { ApolloFederationDriver, ApolloFederationDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
 import { ApolloServerPluginInlineTrace } from '@apollo/server/plugin/inlineTrace';
+import { AuthorsModule } from '@app/authors/authors.module';
 
 @Module({
     imports: [
@@ -26,6 +27,7 @@ import { ApolloServerPluginInlineTrace } from '@apollo/server/plugin/inlineTrace
             csrfPrevention: false,
             plugins: [ApolloServerPluginInlineTrace()],
         }),
+        AuthorsModule,
         PostsModule,
     ],
 })

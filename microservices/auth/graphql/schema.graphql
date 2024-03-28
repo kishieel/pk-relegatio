@@ -1,0 +1,30 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type AuthToken {
+  accessToken: String!
+  refreshToken: String!
+}
+
+type Mutation {
+  refreshToken(input: RefreshTokenInput!): AuthToken!
+  signIn(input: SignInInput!): AuthToken!
+  signUp(input: SignUpInput!): AuthToken!
+}
+
+input RefreshTokenInput {
+  token: String!
+}
+
+input SignInInput {
+  password: String!
+  username: String!
+}
+
+input SignUpInput {
+  firstName: String!
+  lastName: String!
+  password: String!
+  username: String!
+}

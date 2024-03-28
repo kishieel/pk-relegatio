@@ -2,8 +2,6 @@ x-templates:
   ts-microservice-config: &ts-microservice-config
     port: 3000
   ts-microservice-env: &ts-microservice-env
-    NODE_ENV:
-      value: production
     HOST:
       value: 0.0.0.0
     PORT:
@@ -13,16 +11,26 @@ microservices:
   auth:
     <<: *ts-microservice-config
     image: ghcr.io/kishieel/relegatio-auth:1.0.0
+    development:
+      enabled: true
+      source: /volumes/microservices/auth
     env:
       <<: *ts-microservice-env
       DATABASE_URL:
         value: microservices
+      RABBIT_RMQ_URL:
+        value: amqp://guest:guest@rabbit:5672
+      RABBIT_HTTP_URL:
+        value: http://rabbit:15672
       JWT_SECRET:
         value: secret # @todo: change this to a secret or environment variable
 
   gateway:
     <<: *ts-microservice-config
-    image: ghcr.io/kishieel/relegatio-gateway:1.0.1
+    image: ghcr.io/kishieel/relegatio-gateway:1.0.2
+    development:
+      enabled: true
+      source: /volumes/microservices/gateway
     env:
       <<: *ts-microservice-env
 
@@ -39,7 +47,7 @@ microservices:
     image: ghcr.io/kishieel/relegatio-posts:1.0.1
     development:
       enabled: true
-      source: /home/tomek/Repozytoria/pk-systemy-gridowe-relegatio/microservices/posts
+      source: /volumes/microservices/posts
     env:
       <<: *ts-microservice-env
       DATABASE_URL:
@@ -53,6 +61,13 @@ redis:
 
 rabbitmq:
   fullnameOverride: rabbit
+  auth:
+    username: user
+    password: admin
+  ingress:
+    enabled: true
+    hostname: rabbit.relegatio.localhost
+    ingressClassName: nginx
 
 couchdb:
   fullnameOverride: couchdb
@@ -60,28 +75,28 @@ couchdb:
     couchdb:
       uuid: 1298f2bb208f47a69f31a7d6afdd05f5
 
+mailpit:
+  fullnameOverride: mailpit
+  ingress:
+    enabled: true
+    hostname: mailpit.relegatio.localhost
+    ingressClassName: nginx
+
 ingress:
   gateway:
     enabled: true
     serviceName: gateway
     servicePort: 3000
-    hostname: localhost
+    hostname: api.relegatio.localhost
     path: /graphql
     annotations:
       nginx.ingress.kubernetes.io/rewrite-target: /graphql
-  mysql:
-    enabled: false
-  redis:
-    enabled: false
-  mailpit:
-    enabled: false
-  rabbit:
-    enabled: false
-  couchdb:
-    enabled: false
 
 imagePullSecrets:
   - name: ghcr-secret
+
+localUid: 1000
+localGid: 1000
 
 #replicaCount: 1
 #

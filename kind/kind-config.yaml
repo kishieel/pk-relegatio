@@ -17,4 +17,4 @@ nodes:
     protocol: TCP
   extraMounts:
   - hostPath: /home/tomek/Repozytoria/pk-systemy-gridowe-relegatio
-    containerPath: /app
+    containerPath: /volumes

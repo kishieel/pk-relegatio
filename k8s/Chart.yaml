@@ -17,3 +17,6 @@ dependencies:
   - name: couchdb
     version: 4.5.0
     repository: "https://apache.github.io/couchdb-helm/"
+  - name: mailpit
+    version: 0.15.0
+    repository: "https://jouve.github.io/charts/"

@@ -126,3 +126,10 @@ helm upgrade relegatio-chart k8s
 4. Sometimes gateway starts faster than services and fails to connect.
 
     Added liveness and readiness probes to restart the gateway after initial failure.
+
+5. Mounting volumes from host to containers for live reloading during development.
+
+    Because local cluster is created with `kind`, the volume from host cannot be mounted directly to the container. 
+    Instead `kind` itself create container where the cluster lives. So in this sense the host for cluster is not the same as the host for the local machine. 
+    The host for cluster is the container created by `kind`. 
+    So the volume from local machine have to be mounted to the `kind` container first.
