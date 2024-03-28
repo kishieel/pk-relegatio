@@ -23,6 +23,7 @@ import { ApolloServerPluginInlineTrace } from '@apollo/server/plugin/inlineTrace
                 [GraphQLUUID.name]: GraphQLUUID,
                 [GraphQLDateTimeISO.name]: GraphQLDateTimeISO,
             },
+            csrfPrevention: false,
             plugins: [ApolloServerPluginInlineTrace()],
         }),
         PostsModule,

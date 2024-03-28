@@ -1,0 +1,15 @@
+dependencies:
+- name: mysql
+  repository: https://charts.bitnami.com/bitnami
+  version: 10.1.0
+- name: redis
+  repository: https://charts.bitnami.com/bitnami
+  version: 19.0.1
+- name: rabbitmq
+  repository: https://charts.bitnami.com/bitnami
+  version: 13.0.0
+- name: couchdb
+  repository: https://apache.github.io/couchdb-helm/
+  version: 4.5.0
+digest: sha256:dcf69592712bcadee3aa5b24ee31efc0d75e98fcbcab1631c1f68283ce55fa32
+generated: "2024-03-27T17:11:02.951329887+01:00"

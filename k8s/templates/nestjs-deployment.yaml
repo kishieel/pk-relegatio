@@ -1,0 +1,39 @@
+{{- range $serviceName, $serviceConfig := .Values.microservices }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $serviceName }}
+  labels:
+    name: {{ $serviceName }}
+spec:
+  selector:
+    matchLabels:
+      name: {{ $serviceName }}
+  template:
+    metadata:
+      labels:
+        name: {{ $serviceName }}
+    spec:
+      imagePullSecrets:
+        {{- toYaml $.Values.imagePullSecrets | nindent 8 }}
+      containers:
+        - name: {{ $serviceName }}
+          image: {{ $serviceConfig.image }}
+          ports:
+            - containerPort: {{ $serviceConfig.port }}
+          imagePullPolicy: Always
+          {{- if ($serviceConfig.development).enabled }}
+          volumeMounts:
+            - mountPath: /app
+              name: {{ $serviceName }}-code
+              readOnly: true
+          {{- end }}
+      {{- if ($serviceConfig.development).enabled }}
+      volumes:
+        - name: {{ $serviceName }}-code
+          hostPath:
+            path: {{ ($serviceConfig.development).source }}
+            type: Directory
+      {{- end }}
+---
+{{- end }}
