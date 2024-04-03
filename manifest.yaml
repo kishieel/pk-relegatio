@@ -203,9 +203,9 @@ metadata:
 type: Opaque
 data:
   adminUsername: "YWRtaW4="
-  adminPassword: "R3ZOTFU3S2hFQThKNmxMVnRGdVQ="
-  erlangCookie: "azczZjZJeklnMHJRZkxsaWVMSmY="
-  cookieAuthSecret: "UDhqbUlHUVJ3dlNvVEVoemhxazU="
+  adminPassword: "YWRtaW4="
+  erlangCookie: "eDluMUlyQXRWTHhXNENIa3Z6WFY="
+  cookieAuthSecret: "M09jNGlrTm5hdnRwbkxWRjhVTFI="
 ---
 # Source: k8s/charts/mysql/templates/secrets.yaml
 apiVersion: v1
@@ -221,8 +221,8 @@ metadata:
     helm.sh/chart: mysql-10.1.0
 type: Opaque
 data:
-  mysql-root-password: "dnd0Nlk3ZGs3QQ=="
-  mysql-password: "YzBZTkM2c1RzRA=="
+  mysql-root-password: "N2l4VTdpcHhZMQ=="
+  mysql-password: "bU11Z1NvQmRUWQ=="
 ---
 # Source: k8s/charts/rabbitmq/templates/config-secret.yaml
 apiVersion: v1
@@ -239,7 +239,7 @@ metadata:
 type: Opaque
 data:
   rabbitmq.conf: |-
-    IyMgVXNlcm5hbWUgYW5kIHBhc3N3b3JkCmRlZmF1bHRfdXNlciA9IHVzZXIKIyMgQ2x1c3RlcmluZwojIwpjbHVzdGVyX25hbWUgPSByYWJiaXQKY2x1c3Rlcl9mb3JtYXRpb24ucGVlcl9kaXNjb3ZlcnlfYmFja2VuZCAgPSByYWJiaXRfcGVlcl9kaXNjb3ZlcnlfazhzCmNsdXN0ZXJfZm9ybWF0aW9uLms4cy5ob3N0ID0ga3ViZXJuZXRlcy5kZWZhdWx0CmNsdXN0ZXJfZm9ybWF0aW9uLms4cy5hZGRyZXNzX3R5cGUgPSBob3N0bmFtZQpjbHVzdGVyX2Zvcm1hdGlvbi5rOHMuc2VydmljZV9uYW1lID0gcmFiYml0LWhlYWRsZXNzCmNsdXN0ZXJfZm9ybWF0aW9uLms4cy5ob3N0bmFtZV9zdWZmaXggPSAucmFiYml0LWhlYWRsZXNzLmRlZmF1bHQuc3ZjLmNsdXN0ZXIubG9jYWwKY2x1c3Rlcl9mb3JtYXRpb24ubm9kZV9jbGVhbnVwLmludGVydmFsID0gMTAKY2x1c3Rlcl9mb3JtYXRpb24ubm9kZV9jbGVhbnVwLm9ubHlfbG9nX3dhcm5pbmcgPSB0cnVlCmNsdXN0ZXJfcGFydGl0aW9uX2hhbmRsaW5nID0gYXV0b2hlYWwKCiMgcXVldWUgbWFzdGVyIGxvY2F0b3IKcXVldWVfbWFzdGVyX2xvY2F0b3IgPSBtaW4tbWFzdGVycwojIGVuYWJsZSBsb29wYmFjayB1c2VyCmxvb3BiYWNrX3VzZXJzLnVzZXIgPSBmYWxzZQojZGVmYXVsdF92aG9zdCA9IGRlZmF1bHQtdmhvc3QKI2Rpc2tfZnJlZV9saW1pdC5hYnNvbHV0ZSA9IDUwTUI=
+    IyMgVXNlcm5hbWUgYW5kIHBhc3N3b3JkCmRlZmF1bHRfdXNlciA9IGFkbWluCiMjIENsdXN0ZXJpbmcKIyMKY2x1c3Rlcl9uYW1lID0gcmFiYml0CmNsdXN0ZXJfZm9ybWF0aW9uLnBlZXJfZGlzY292ZXJ5X2JhY2tlbmQgID0gcmFiYml0X3BlZXJfZGlzY292ZXJ5X2s4cwpjbHVzdGVyX2Zvcm1hdGlvbi5rOHMuaG9zdCA9IGt1YmVybmV0ZXMuZGVmYXVsdApjbHVzdGVyX2Zvcm1hdGlvbi5rOHMuYWRkcmVzc190eXBlID0gaG9zdG5hbWUKY2x1c3Rlcl9mb3JtYXRpb24uazhzLnNlcnZpY2VfbmFtZSA9IHJhYmJpdC1oZWFkbGVzcwpjbHVzdGVyX2Zvcm1hdGlvbi5rOHMuaG9zdG5hbWVfc3VmZml4ID0gLnJhYmJpdC1oZWFkbGVzcy5kZWZhdWx0LnN2Yy5jbHVzdGVyLmxvY2FsCmNsdXN0ZXJfZm9ybWF0aW9uLm5vZGVfY2xlYW51cC5pbnRlcnZhbCA9IDEwCmNsdXN0ZXJfZm9ybWF0aW9uLm5vZGVfY2xlYW51cC5vbmx5X2xvZ193YXJuaW5nID0gdHJ1ZQpjbHVzdGVyX3BhcnRpdGlvbl9oYW5kbGluZyA9IGF1dG9oZWFsCgojIHF1ZXVlIG1hc3RlciBsb2NhdG9yCnF1ZXVlX21hc3Rlcl9sb2NhdG9yID0gbWluLW1hc3RlcnMKIyBlbmFibGUgbG9vcGJhY2sgdXNlcgpsb29wYmFja191c2Vycy5hZG1pbiA9IGZhbHNlCiNkZWZhdWx0X3Zob3N0ID0gZGVmYXVsdC12aG9zdAojZGlza19mcmVlX2xpbWl0LmFic29sdXRlID0gNTBNQg==
 ---
 # Source: k8s/charts/rabbitmq/templates/secrets.yaml
 apiVersion: v1
@@ -256,7 +256,7 @@ metadata:
 type: Opaque
 data:
   rabbitmq-password: "YWRtaW4="
-  rabbitmq-erlang-cookie: "a2E5Nm9TUlVMNkZMRlJLQ2JPY2dEVXJzSjBweGVzWm8="
+  rabbitmq-erlang-cookie: "RTdWU1JRUVRDcVFuUGxsaEZmQXc4ZllSYkNmSm5MU3k="
 ---
 # Source: k8s/charts/redis/templates/secret.yaml
 apiVersion: v1
@@ -272,7 +272,7 @@ metadata:
     helm.sh/chart: redis-19.0.1
 type: Opaque
 data:
-  redis-password: "cm5xOUtGdFJZNg=="
+  redis-password: "aTNseE1PSjlZYw=="
 ---
 # Source: k8s/charts/couchdb/templates/configmap.yaml
 apiVersion: v1
@@ -297,7 +297,7 @@ data:
 
   seedlistinifile: |
     [cluster]
-    seedlist = couchdb@couchdb-couchdb-0.couchdb-couchdb.default.svc.cluster.local,couchdb@couchdb-couchdb-1.couchdb-couchdb.default.svc.cluster.local,couchdb@couchdb-couchdb-2.couchdb-couchdb.default.svc.cluster.local
+    seedlist = couchdb@couchdb-couchdb-0.couchdb-couchdb.default.svc.cluster.local,couchdb@couchdb-couchdb-1.couchdb-couchdb.default.svc.cluster.local
 ---
 # Source: k8s/charts/mysql/templates/primary/configmap.yaml
 apiVersion: v1
@@ -646,6 +646,50 @@ spec:
     app: couchdb
     release: release-name
 ---
+# Source: k8s/charts/mailpit/templates/http-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mailpit-http
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: mailpit
+    app.kubernetes.io/version: v1.14.4
+    helm.sh/chart: mailpit-0.15.0
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+  selector:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/name: mailpit
+---
+# Source: k8s/charts/mailpit/templates/smtp-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mailpit-smtp
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: mailpit
+    app.kubernetes.io/version: v1.14.4
+    helm.sh/chart: mailpit-0.15.0
+spec:
+  type: ClusterIP
+  ports:
+    - name: smtp
+      port: 25
+      targetPort: smtp
+  selector:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/name: mailpit
+---
 # Source: k8s/charts/mysql/templates/primary/svc-headless.yaml
 apiVersion: v1
 kind: Service
@@ -892,6 +936,92 @@ spec:
     - port: 3000
       targetPort: 3000
 ---
+# Source: k8s/charts/mailpit/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mailpit
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: mailpit
+    app.kubernetes.io/version: v1.14.4
+    helm.sh/chart: mailpit-0.15.0
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: release-name
+      app.kubernetes.io/name: mailpit
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: release-name
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: mailpit
+        app.kubernetes.io/version: v1.14.4
+        helm.sh/chart: mailpit
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        fsGroup: 1001
+      containers:
+        - name: mailpit
+          image: docker.io/axllent/mailpit:v1.14.4
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsUser: 1001
+            runAsGroup: 1001
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+          args:
+          - --db-file
+          - /var/lib/mailpit/mailpit.db
+          - --webroot
+          - /
+          resources:
+            limits:
+              cpu: 100m
+              memory: 64Mi
+            requests:
+              cpu: 5m
+              memory: 4Mi
+          ports:
+            - name: http
+              containerPort: 8025
+            - name: smtp
+              containerPort: 1025
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: 8025
+              scheme: HTTP
+            initialDelaySeconds: 2
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8025
+              scheme: HTTP
+            initialDelaySeconds: 2
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 5
+          volumeMounts:
+          - name: data
+            mountPath: /var/lib/mailpit
+      volumes:
+        - name: data
+          emptyDir: {}
+---
 # Source: k8s/templates/nestjs-deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -1015,7 +1145,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: posts
-          image: ghcr.io/kishieel/relegatio-posts:1.0.1
+          image: ghcr.io/kishieel/relegatio-posts:1.0.2
           ports:
             - containerPort: 3000
           imagePullPolicy: Always
@@ -1039,7 +1169,7 @@ metadata:
     release: release-name
     heritage: Helm
 spec:
-  replicas: 3
+  replicas: 2
   serviceName: couchdb-couchdb
   podManagementPolicy: Parallel
   selector:
@@ -1052,8 +1182,8 @@ spec:
         app: couchdb
         release: release-name
       annotations:
-        checksum/config: ffd980ed481b8e2f2e4b7681196e9d490e298d16af669cf277805f8d8058be5a
-        checksum/secret: e7d6b4b06f96f40b5c62524fa483112ef23e25516646c00dfd68531a9c1ea226
+        checksum/config: 5ee8196556785abb0e8ca30fa875d97e78bafc04da5ce13f7e3ea240d022e193
+        checksum/secret: ef5ca91ae40e5f2603efd199d92b18e343e919961e0c07e81521b2500adcb6b7
     spec:
       serviceAccountName: couchdb-couchdb
       initContainers:
@@ -1129,6 +1259,12 @@ spec:
             mountPath: /opt/couchdb/etc/default.d
           - name: database-storage
             mountPath: /opt/couchdb/data
+        - name: clouseau
+          image: "kocolosk/couchdb-search:0.2.0"
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+          - name: database-storage
+            mountPath: /opt/couchdb-search/data
       volumes:
         - name: config-storage
           emptyDir: {}
@@ -1140,8 +1276,18 @@ spec:
                 path: chart.ini
               - key: seedlistinifile
                 path: seedlist.ini
-        - name: database-storage
-          emptyDir: {}
+  volumeClaimTemplates:
+    - metadata:
+        name: database-storage
+        labels:
+          app: couchdb
+          release: release-name
+      spec:
+        accessModes:
+        - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "10Gi"
 ---
 # Source: k8s/charts/mysql/templates/primary/statefulset.yaml
 apiVersion: apps/v1
@@ -1399,8 +1545,8 @@ spec:
         app.kubernetes.io/version: 3.12.13
         helm.sh/chart: rabbitmq-13.0.0
       annotations:
-        checksum/config: e60752820629f05dfc1e508b8d32326b1aee2ba8bcc759eee00674f15274101a
-        checksum/secret: 3f62d658074cc07c2c9da4ae37134c2ce3fbdf27e9cba3fe6b347b7dd1d6bb3f
+        checksum/config: 0845d01890a928270266dda9d6d6e4b74199bd3c5b77b7bc23b447f20d0113e6
+        checksum/secret: 30e5c1199632e6b27cc714d73991d087105b62ddedbe611c317a0928154e8e97
     spec:
       
       serviceAccountName: rabbit
@@ -1495,7 +1641,7 @@ spec:
             - name: RABBITMQ_SECURE_PASSWORD
               value: "yes"
             - name: RABBITMQ_USERNAME
-              value: "user"
+              value: "admin"
             - name: RABBITMQ_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -1523,7 +1669,7 @@ spec:
               command:
                 - sh
                 - -ec
-                - curl -f --user user:$RABBITMQ_PASSWORD 127.0.0.1:15672/api/health/checks/virtual-hosts
+                - curl -f --user admin:$RABBITMQ_PASSWORD 127.0.0.1:15672/api/health/checks/virtual-hosts
           readinessProbe:
             failureThreshold: 3
             initialDelaySeconds: 10
@@ -1534,7 +1680,7 @@ spec:
               command:
                 - sh
                 - -ec
-                - curl -f --user user:$RABBITMQ_PASSWORD 127.0.0.1:15672/api/health/checks/local-alarms
+                - curl -f --user admin:$RABBITMQ_PASSWORD 127.0.0.1:15672/api/health/checks/local-alarms
           resources:
             limits:
               cpu: 375m
@@ -1623,7 +1769,7 @@ spec:
         checksum/configmap: 86bcc953bb473748a3d3dc60b7c11f34e60c93519234d4c37f42e22ada559d47
         checksum/health: aff24913d801436ea469d8d374b2ddb3ec4c43ee7ab24663d5f8ff1a1b6991a9
         checksum/scripts: bb405ab6e14129d9c1652d99ffde3146c358de2ef89164a4c63bb0b1894e7537
-        checksum/secret: f0b91fa9d8208a13f0bd81399a2ff79b34dfab1cd7c6d95bc3851d1256e81823
+        checksum/secret: 11a474577fd3d4bdd5de46993dd7c62e63e43aeb3e586d44a60ec5928312c3b6
     spec:
       
       securityContext:
@@ -1803,7 +1949,7 @@ spec:
         checksum/configmap: 86bcc953bb473748a3d3dc60b7c11f34e60c93519234d4c37f42e22ada559d47
         checksum/health: aff24913d801436ea469d8d374b2ddb3ec4c43ee7ab24663d5f8ff1a1b6991a9
         checksum/scripts: bb405ab6e14129d9c1652d99ffde3146c358de2ef89164a4c63bb0b1894e7537
-        checksum/secret: 2ada90d86c745d485cc630cfafff8f6badf030e25af826d1a8f5685c4b87ad05
+        checksum/secret: cd75d299f67ee4c9180f3b45bd59c285cc52555619864db70ed5df61a8d1f3b2
     spec:
       
       securityContext:
@@ -1963,6 +2109,57 @@ spec:
           requests:
             storage: "8Gi"
 ---
+# Source: k8s/charts/couchdb/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: couchdb-couchdb
+  labels:
+    app: couchdb
+    chart: couchdb-4.5.0
+    release: release-name
+    heritage: Helm
+  annotations:
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: couchdb.relegatio.localhost
+      http:
+        paths:
+          - path: "/"
+            pathType: Prefix
+            backend:
+              service:
+                name: couchdb-svc-couchdb
+                port:
+                  number: 5984
+---
+# Source: k8s/charts/mailpit/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mailpit
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: mailpit
+    app.kubernetes.io/version: v1.14.4
+    helm.sh/chart: mailpit-0.15.0
+spec:
+  ingressClassName: "nginx"
+  rules:
+    - host: "mailpit.relegatio.localhost"
+      http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: mailpit-http
+                port:
+                  name: http
+---
 # Source: k8s/charts/rabbitmq/templates/ingress.yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -2009,3 +2206,51 @@ spec:
                 name: gateway
                 port:
                   number: 3000
+---
+# Source: k8s/charts/couchdb/templates/job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "release-name-post-install"
+  labels:
+    app.kubernetes.io/managed-by: "Helm"
+    app.kubernetes.io/instance: "release-name"
+    app.kubernetes.io/version: 3.3.2
+    helm.sh/chart: couchdb-4.5.0
+  annotations:
+    "helm.sh/hook": post-install
+spec:
+  template:
+    metadata:
+      name: "release-name-post-install"
+      labels:
+        app.kubernetes.io/managed-by: "Helm"
+        app.kubernetes.io/instance: "release-name"
+        helm.sh/chart: couchdb-4.5.0
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: cluster-setup
+          image: curlimages/curl:latest
+          imagePullPolicy: Always
+          command:
+            - 'sh'
+            - '-c'
+            - 'curl -s http://$COUCHDB_ADDRESS/_cluster_setup -X POST -H "Content-Type: application/json" -d "{\"action\": \"finish_cluster\"}" -u $COUCHDB_ADMIN:$COUCHDB_PASS && export IFS=","; for db_name in $DEFAULT_DBS; do curl -X PUT http://$COUCHDB_ADDRESS/$db_name -u $COUCHDB_ADMIN:$COUCHDB_PASS; done'
+          env:
+            - name: DEFAULT_DBS
+              value: _global_changes,_replicator,_users
+            - name: COUCHDB_ADDRESS
+              value: "couchdb-svc-couchdb.default.svc.cluster.local:5984"
+            - name: COUCHDB_ADMIN
+              valueFrom:
+                secretKeyRef:
+                  name: couchdb-couchdb
+                  key: adminUsername
+            - name: COUCHDB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: couchdb-couchdb
+                  key: adminPassword
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 600

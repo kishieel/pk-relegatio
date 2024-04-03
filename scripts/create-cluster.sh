@@ -18,6 +18,9 @@ kubectl wait -n ingress-nginx --for=condition=ready pod --selector=app.kubernete
 # Create a secret for the GitHub Container Registry
 kubectl create secret docker-registry ghcr-secret --docker-server=ghcr.io --docker-username=kishieel --docker-password=$GITHUB_TOKEN || fail "Secret creation failed"
 
+# Load the images into the Docker daemon and the kind cluster
+source scripts/load-images.sh
+
 # Install the Helm chart
 helm install \
   --set localUid="${LOCAL_UID}" \

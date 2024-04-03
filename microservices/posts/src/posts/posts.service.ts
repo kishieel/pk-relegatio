@@ -8,7 +8,7 @@ export class PostsService {
             {
                 uuid: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
                 authorUuid: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
-                title: 'Hello, World!',
+                title: 'Hello, World! v4',
                 slug: 'hello-world-4719729',
                 content: 'Hello, World! This is a after update.',
                 createdAt: new Date(),

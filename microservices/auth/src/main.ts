@@ -18,7 +18,7 @@ async function bootstrap() {
     // @todo: fix hardcoded config
     app.connectMicroservice<CustomStrategy>({
         strategy: new MessagingServer({
-            rmqUrl: 'amqp://user:admin@rabbit:5672',
+            rmqUrl: 'amqp://admin:admin@rabbit:5672',
             queue: Queue.Auth,
             eventbus: Eventbus.Internal,
             exitOnError: true,

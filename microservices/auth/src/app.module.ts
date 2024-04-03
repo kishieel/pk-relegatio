@@ -31,7 +31,7 @@ import { BindingsModule, Eventbus, MessagingModule, Queue } from '@kishieel/rele
             useFactory: () => {
                 // @todo: fix hardcoded config
                 return {
-                    httpUrl: 'http://user:admin@rabbit:15672',
+                    httpUrl: 'http://admin:admin@rabbit:15672',
                     eventbus: Eventbus.Internal,
                     queue: Queue.Auth,
                 };
@@ -40,7 +40,7 @@ import { BindingsModule, Eventbus, MessagingModule, Queue } from '@kishieel/rele
         MessagingModule.forRootAsync({
             useFactory: () => {
                 // @todo: fix hardcoded config
-                return { rmqUrl: 'amqp://user:admin@rabbit:5672' };
+                return { rmqUrl: 'amqp://admin:admin@rabbit:5672' };
             },
         }),
         AuthModule,
