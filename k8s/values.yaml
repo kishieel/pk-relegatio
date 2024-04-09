@@ -36,7 +36,10 @@ microservices:
 
   notifications:
     <<: *ts-microservice-config
-    image: ghcr.io/kishieel/relegatio-notifications:1.0.0
+    image: ghcr.io/kishieel/relegatio-notifications:1.0.1
+    development:
+      enabled: true
+      source: /volumes/microservices/notifications
     env:
       <<: *ts-microservice-env
       DATABASE_URL:

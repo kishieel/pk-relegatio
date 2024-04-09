@@ -27,7 +27,7 @@ spec:
           image: {{ $serviceConfig.image }}
           ports:
             - containerPort: {{ $serviceConfig.port }}
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           {{- if ($serviceConfig.development).enabled }}
           volumeMounts:
             - mountPath: /app

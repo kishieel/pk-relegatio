@@ -1010,10 +1010,10 @@
     reflect-metadata "^0.1.13"
     rxjs "^7.8.1"
 
-"@kishieel/relegatio-messaging@1.0.0":
-  version "1.0.0"
-  resolved "https://npm.pkg.github.com/download/@kishieel/relegatio-messaging/1.0.0/69fa9783399067231d5f29bc0725af6e9e801e43#69fa9783399067231d5f29bc0725af6e9e801e43"
-  integrity sha512-NUGGtlbbTHGhO9lMKS2P1rPNIdJnwoTl8ihIMakQi+A/HHflkmTTpir3ppm6oKK50UIoKEodHuND6bb/VZc8pQ==
+"@kishieel/relegatio-messaging@1.0.1":
+  version "1.0.1"
+  resolved "https://npm.pkg.github.com/download/@kishieel/relegatio-messaging/1.0.1/17ec6595c2691bf84cf4778724772ce8e7c9a47e#17ec6595c2691bf84cf4778724772ce8e7c9a47e"
+  integrity sha512-3SphZyOta84vPtGqneJ9gjivEesmYAAP5NU7kOD5YhvNFm2XBRufGajSpGwDhbh0TqBYmETVrf1a2SaPVgrmeQ==
   dependencies:
     "@kishieel/nestjs-distributed-shared" "0.0.8"
     "@nestjs/axios" "3.0.0"

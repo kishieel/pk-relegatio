@@ -2,7 +2,7 @@ import { AuthToken } from '@app/auth/gql/auth-token.object';
 import { SignUpInput } from '@app/auth/gql/sign-up.input';
 import { SignInInput } from '@app/auth/gql/sign-in.input';
 import { RefreshTokenInput } from '@app/auth/gql/refresh-token.input';
-import { Eventbus, EventType, MessagingService } from '@kishieel/relegatio-messaging';
+import { Eventbus, EventContent, EventType, MessagingService } from '@kishieel/relegatio-messaging';
 import { Inject } from '@nestjs/common';
 
 export class AuthService {
@@ -12,15 +12,14 @@ export class AuthService {
     ) {}
 
     async signUp(input: SignUpInput): Promise<AuthToken> {
-        const user = {
+        const user: EventContent<EventType.UserRegistered> = {
             uuid: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
             username: input.username,
-            password: input.password,
             createdAt: new Date(),
             updatedAt: new Date(),
         };
 
-        this.eventbus.emit(EventType.UserCreated, user);
+        this.eventbus.emit(EventType.UserRegistered, user);
 
         [input];
         return {

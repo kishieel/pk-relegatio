@@ -8,7 +8,7 @@
 - Redis
 - RabbitMQ
 - CouchDB
-- Mailtrap
+- Mailpit
 
 ##### Notes:
 
@@ -22,10 +22,10 @@ source .env
 echo $GITHUB_TOKEN | docker login ghcr.io -u kishieel --password-stdin
 kubectl create secret docker-registry ghcr-secret --docker-server=ghcr.io --docker-username=kishieel --docker-password=$GITHUB_TOKEN
 
-docker build --target development --tag ghcr.io/kishieel/relegatio-auth:1.0.0 --file dockerfiles/nestjs.Dockerfile microservices/auth
-docker build --target development --tag ghcr.io/kishieel/relegatio-gateway:1.0.0 --file dockerfiles/nestjs.Dockerfile microservices/gateway
-docker build --target development --tag ghcr.io/kishieel/relegatio-notifications:1.0.0 --file dockerfiles/nestjs.Dockerfile microservices/notifications
-docker build --target development --tag ghcr.io/kishieel/relegatio-posts:1.0.0 --file dockerfiles/nestjs.Dockerfile microservices/posts
+docker build --build-arg GITHUB_TOKEN=$GITHUB_TOKEN --target development --tag ghcr.io/kishieel/relegatio-auth:1.0.0 --file dockerfiles/nestjs.Dockerfile microservices/auth
+docker build --build-arg GITHUB_TOKEN=$GITHUB_TOKEN --target development --tag ghcr.io/kishieel/relegatio-gateway:1.0.0 --file dockerfiles/nestjs.Dockerfile microservices/gateway
+docker build --build-arg GITHUB_TOKEN=$GITHUB_TOKEN --target development --tag ghcr.io/kishieel/relegatio-notifications:1.0.0 --file dockerfiles/nestjs.Dockerfile microservices/notifications
+docker build --build-arg GITHUB_TOKEN=$GITHUB_TOKEN --target development --tag ghcr.io/kishieel/relegatio-posts:1.0.0 --file dockerfiles/nestjs.Dockerfile microservices/posts
 
 docker push ghcr.io/kishieel/relegatio-auth:1.0.0
 docker push ghcr.io/kishieel/relegatio-gateway:1.0.0
