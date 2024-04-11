@@ -1,7 +1,6 @@
 export type UserUpdatedPayload = {
-    uuid: string;
+    id: string;
     username?: string;
-    password?: string;
     firstName?: string;
     lastName?: string;
     createdAt?: Date;

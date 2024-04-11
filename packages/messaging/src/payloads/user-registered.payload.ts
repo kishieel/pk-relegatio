@@ -1,6 +1,8 @@
 export interface UserRegisteredPayload {
-    uuid: string;
+    id: string;
     username: string;
+    firstName: string;
+    lastName: string;
     createdAt: Date;
     updatedAt: Date;
 }

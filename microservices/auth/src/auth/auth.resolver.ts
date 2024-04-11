@@ -4,6 +4,8 @@ import { AuthService } from '@app/auth/auth.service';
 import { SignUpInput } from '@app/auth/gql/sign-up.input';
 import { SignInInput } from '@app/auth/gql/sign-in.input';
 import { RefreshTokenInput } from '@app/auth/gql/refresh-token.input';
+import { AuthGuard } from '@kishieel/relegatio-common';
+import { UseGuards } from '@nestjs/common';
 
 
 @Resolver(() => AuthToken)
@@ -21,6 +23,7 @@ export class AuthResolver {
         return this.authService.signIn(input);
     }
 
+    @UseGuards(AuthGuard)
     @Mutation(() => AuthToken)
     async refreshToken(@Args('input') input: RefreshTokenInput): Promise<AuthToken> {
         return this.authService.refreshToken(input);

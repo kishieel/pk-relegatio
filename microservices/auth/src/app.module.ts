@@ -1,49 +1,12 @@
 import { Module } from '@nestjs/common';
-import { GraphQLModule } from '@nestjs/graphql';
-import { join } from 'path';
-import { GraphQLDateTimeISO, GraphQLUUID } from 'graphql-scalars';
-import { ApolloServerPluginInlineTrace } from '@apollo/server/plugin/inlineTrace';
-import { ApolloFederationDriver, ApolloFederationDriverConfig } from '@nestjs/apollo';
 import { AuthModule } from '@app/auth/auth.module';
-import { BindingsModule, Eventbus, MessagingModule, Queue } from '@kishieel/relegatio-messaging';
+import { ConfigModule } from '@nestjs/config';
+import { PrismaModule } from '@app/prisma/prisma.module';
+import { GraphqlModule } from '@app/modules/graphql.module';
+import { RabbitModule } from '@app/modules/rabbit.module';
+import { TokensModule } from '@app/tokens/tokens.module';
 
 @Module({
-    imports: [
-        GraphQLModule.forRoot<ApolloFederationDriverConfig>({
-            driver: ApolloFederationDriver,
-            autoSchemaFile: {
-                federation: 2,
-                path: join(process.cwd(), 'graphql/schema.graphql'),
-            },
-            sortSchema: true,
-            playground: false,
-            buildSchemaOptions: {
-                orphanedTypes: [],
-            },
-            resolvers: {
-                [GraphQLUUID.name]: GraphQLUUID,
-                [GraphQLDateTimeISO.name]: GraphQLDateTimeISO,
-            },
-            csrfPrevention: false,
-            plugins: [ApolloServerPluginInlineTrace()],
-        }),
-        BindingsModule.forRootAsync({
-            useFactory: () => {
-                // @todo: fix hardcoded config
-                return {
-                    httpUrl: 'http://admin:admin@rabbit:15672',
-                    eventbus: Eventbus.Internal,
-                    queue: Queue.Auth,
-                };
-            },
-        }),
-        MessagingModule.forRootAsync({
-            useFactory: () => {
-                // @todo: fix hardcoded config
-                return { rmqUrl: 'amqp://admin:admin@rabbit:5672' };
-            },
-        }),
-        AuthModule,
-    ],
+    imports: [GraphqlModule, RabbitModule, ConfigModule, PrismaModule, AuthModule, TokensModule],
 })
 export class AppModule {}

@@ -1,3 +1,3 @@
 export type UserDeletedPayload = {
-    uuid: string;
+    id: string;
 };

@@ -204,8 +204,8 @@ type: Opaque
 data:
   adminUsername: "YWRtaW4="
   adminPassword: "YWRtaW4="
-  erlangCookie: "MTdPNjF1ZmRsS0tsOU0yaUZ0cjI="
-  cookieAuthSecret: "a3VydUxManlqTjNmbGNqVE02TDQ="
+  erlangCookie: "OWJIcEF3cjEwVG5oR1ZieXRsbFc="
+  cookieAuthSecret: "czVJcjNGYkxxemZoeFFFcWNsOGc="
 ---
 # Source: k8s/charts/mysql/templates/secrets.yaml
 apiVersion: v1
@@ -221,8 +221,8 @@ metadata:
     helm.sh/chart: mysql-10.1.0
 type: Opaque
 data:
-  mysql-root-password: "bzFOTXVtUkdHRw=="
-  mysql-password: "elFlaUVSanVOdQ=="
+  mysql-root-password: "MEtLU0o0QnJ0cA=="
+  mysql-password: "YWRtaW4="
 ---
 # Source: k8s/charts/rabbitmq/templates/config-secret.yaml
 apiVersion: v1
@@ -256,7 +256,7 @@ metadata:
 type: Opaque
 data:
   rabbitmq-password: "YWRtaW4="
-  rabbitmq-erlang-cookie: "OFRXdWFQMGdLQWZuN2ZiTExSUVBpRnc1a3JyZ2xsUHU="
+  rabbitmq-erlang-cookie: "VDRWUUpZa0c4d29oWlhIOTJyMVdUdkdEWFV4ZG13b0s="
 ---
 # Source: k8s/charts/redis/templates/secret.yaml
 apiVersion: v1
@@ -272,7 +272,7 @@ metadata:
     helm.sh/chart: redis-19.0.1
 type: Opaque
 data:
-  redis-password: "ZzY4cEgxWEF4Yw=="
+  redis-password: "ekM5cUoxV2s3MA=="
 ---
 # Source: k8s/charts/couchdb/templates/configmap.yaml
 apiVersion: v1
@@ -888,7 +888,7 @@ spec:
     app.kubernetes.io/name: redis
     app.kubernetes.io/component: replica
 ---
-# Source: k8s/templates/nestjs-service.yaml
+# Source: k8s/templates/nestjs.yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -900,7 +900,7 @@ spec:
     - port: 3000
       targetPort: 3000
 ---
-# Source: k8s/templates/nestjs-service.yaml
+# Source: k8s/templates/nestjs.yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -912,7 +912,7 @@ spec:
     - port: 3000
       targetPort: 3000
 ---
-# Source: k8s/templates/nestjs-service.yaml
+# Source: k8s/templates/nestjs.yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -924,7 +924,7 @@ spec:
     - port: 3000
       targetPort: 3000
 ---
-# Source: k8s/templates/nestjs-service.yaml
+# Source: k8s/templates/nestjs.yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -1022,7 +1022,7 @@ spec:
         - name: data
           emptyDir: {}
 ---
-# Source: k8s/templates/nestjs-deployment.yaml
+# Source: k8s/templates/nestjs.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -1050,16 +1050,49 @@ spec:
           ports:
             - containerPort: 3000
           imagePullPolicy: IfNotPresent
+          env:
+            - name: DATABASE_URL
+              value: "mysql://admin:admin@mysql:3306/auth"
+            - name: HOST
+              value: "0.0.0.0"
+            - name: JWT_SECRET
+              value: "secret"
+            - name: PORT
+              value: "3000"
+            - name: RABBIT_HTTP_URL
+              value: "http://admin:admin@rabbit:15672"
+            - name: RABBIT_RMQ_URL
+              value: "amqp://admin:admin@rabbit:5672"
           volumeMounts:
             - mountPath: /app
               name: auth-code
+          livenessProbe:
+            httpGet:
+              port: 3000
+              path: /graphql?query=%7B__typename%7D
+              httpHeaders:
+                - name: apollo-require-preflight
+                  value: "true"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /graphql?query=%7B__typename%7D
+              port: 3000
+              httpHeaders:
+                - name: apollo-require-preflight
+                  value: "true"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
       volumes:
         - name: auth-code
           hostPath:
             path: /volumes/microservices/auth
             type: Directory
 ---
-# Source: k8s/templates/nestjs-deployment.yaml
+# Source: k8s/templates/nestjs.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -1087,16 +1120,41 @@ spec:
           ports:
             - containerPort: 3000
           imagePullPolicy: IfNotPresent
+          env:
+            - name: HOST
+              value: "0.0.0.0"
+            - name: PORT
+              value: "3000"
           volumeMounts:
             - mountPath: /app
               name: gateway-code
+          livenessProbe:
+            httpGet:
+              port: 3000
+              path: /graphql?query=%7B__typename%7D
+              httpHeaders:
+                - name: apollo-require-preflight
+                  value: "true"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /graphql?query=%7B__typename%7D
+              port: 3000
+              httpHeaders:
+                - name: apollo-require-preflight
+                  value: "true"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
       volumes:
         - name: gateway-code
           hostPath:
             path: /volumes/microservices/gateway
             type: Directory
 ---
-# Source: k8s/templates/nestjs-deployment.yaml
+# Source: k8s/templates/nestjs.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -1124,16 +1182,43 @@ spec:
           ports:
             - containerPort: 3000
           imagePullPolicy: IfNotPresent
+          env:
+            - name: DATABASE_URL
+              value: "map[value:notifications]"
+            - name: HOST
+              value: "0.0.0.0"
+            - name: PORT
+              value: "3000"
           volumeMounts:
             - mountPath: /app
               name: notifications-code
+          livenessProbe:
+            httpGet:
+              port: 3000
+              path: /graphql?query=%7B__typename%7D
+              httpHeaders:
+                - name: apollo-require-preflight
+                  value: "true"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /graphql?query=%7B__typename%7D
+              port: 3000
+              httpHeaders:
+                - name: apollo-require-preflight
+                  value: "true"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
       volumes:
         - name: notifications-code
           hostPath:
             path: /volumes/microservices/notifications
             type: Directory
 ---
-# Source: k8s/templates/nestjs-deployment.yaml
+# Source: k8s/templates/nestjs.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -1161,9 +1246,36 @@ spec:
           ports:
             - containerPort: 3000
           imagePullPolicy: IfNotPresent
+          env:
+            - name: DATABASE_URL
+              value: "map[value:posts]"
+            - name: HOST
+              value: "0.0.0.0"
+            - name: PORT
+              value: "3000"
           volumeMounts:
             - mountPath: /app
               name: posts-code
+          livenessProbe:
+            httpGet:
+              port: 3000
+              path: /graphql?query=%7B__typename%7D
+              httpHeaders:
+                - name: apollo-require-preflight
+                  value: "true"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /graphql?query=%7B__typename%7D
+              port: 3000
+              httpHeaders:
+                - name: apollo-require-preflight
+                  value: "true"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
       volumes:
         - name: posts-code
           hostPath:
@@ -1195,7 +1307,7 @@ spec:
         release: release-name
       annotations:
         checksum/config: 5ee8196556785abb0e8ca30fa875d97e78bafc04da5ce13f7e3ea240d022e193
-        checksum/secret: edb5b04c033d08b6b5275c14e397741a5afafe68c24d6327d4ae50fd6aa16f25
+        checksum/secret: efe64fa8eacab3c02dd7d35ddf819060c94d7f81cd7ed0d9be10daef538c31b8
     spec:
       serviceAccountName: couchdb-couchdb
       initContainers:
@@ -1423,6 +1535,13 @@ spec:
                 secretKeyRef:
                   name: mysql
                   key: mysql-root-password
+            - name: MYSQL_USER
+              value: "admin"
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql
+                  key: mysql-password
             - name: MYSQL_PORT
               value: "3306"
             - name: MYSQL_DATABASE
@@ -1558,7 +1677,7 @@ spec:
         helm.sh/chart: rabbitmq-13.0.0
       annotations:
         checksum/config: 0845d01890a928270266dda9d6d6e4b74199bd3c5b77b7bc23b447f20d0113e6
-        checksum/secret: f052471ffa0ca66c65b6bb5119294dd535b6d863a51d672ce339ab97315442c4
+        checksum/secret: bd3c5f7cf8b48e9408fb6d8c19e09a9a9277d30f5dcad51af395acf5422a6375
     spec:
       
       serviceAccountName: rabbit
@@ -1781,7 +1900,7 @@ spec:
         checksum/configmap: 86bcc953bb473748a3d3dc60b7c11f34e60c93519234d4c37f42e22ada559d47
         checksum/health: aff24913d801436ea469d8d374b2ddb3ec4c43ee7ab24663d5f8ff1a1b6991a9
         checksum/scripts: bb405ab6e14129d9c1652d99ffde3146c358de2ef89164a4c63bb0b1894e7537
-        checksum/secret: b6150189f54ece759db92d35635adefacb96c50108b982e2ccc16ea4c5fea537
+        checksum/secret: adb0844c21eca5ba508be41de3b5b1aadf3fac73cf89dbef010b5cd2c371355c
     spec:
       
       securityContext:
@@ -1961,7 +2080,7 @@ spec:
         checksum/configmap: 86bcc953bb473748a3d3dc60b7c11f34e60c93519234d4c37f42e22ada559d47
         checksum/health: aff24913d801436ea469d8d374b2ddb3ec4c43ee7ab24663d5f8ff1a1b6991a9
         checksum/scripts: bb405ab6e14129d9c1652d99ffde3146c358de2ef89164a4c63bb0b1894e7537
-        checksum/secret: 287673c0f163fee2241c5e8e3e5d231f95c222f96e0c139dbb65ee1148fca62a
+        checksum/secret: d83e4c75bf3fffd2cb0ea8310d4d773d131f26e8d7c868f91ef1828779ec6c83
     spec:
       
       securityContext:
@@ -2198,7 +2317,7 @@ spec:
                 port:
                   name: http-stats
 ---
-# Source: k8s/templates/default-ingress.yaml
+# Source: k8s/templates/nestjs.yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:

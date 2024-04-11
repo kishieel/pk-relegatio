@@ -2,10 +2,8 @@ x-templates:
   ts-microservice-config: &ts-microservice-config
     port: 3000
   ts-microservice-env: &ts-microservice-env
-    HOST:
-      value: 0.0.0.0
-    PORT:
-      value: 3000
+    HOST: 0.0.0.0
+    PORT: "3000"
 
 microservices:
   auth:
@@ -16,14 +14,10 @@ microservices:
       source: /volumes/microservices/auth
     env:
       <<: *ts-microservice-env
-      DATABASE_URL:
-        value: microservices
-      RABBIT_RMQ_URL:
-        value: amqp://guest:guest@rabbit:5672
-      RABBIT_HTTP_URL:
-        value: http://rabbit:15672
-      JWT_SECRET:
-        value: secret # @todo: change this to a secret or environment variable
+      DATABASE_URL: mysql://admin:admin@mysql:3306/auth
+      RABBIT_RMQ_URL: amqp://admin:admin@rabbit:5672
+      RABBIT_HTTP_URL: http://admin:admin@rabbit:15672
+      JWT_SECRET: secret
 
   gateway:
     <<: *ts-microservice-config
@@ -33,6 +27,14 @@ microservices:
       source: /volumes/microservices/gateway
     env:
       <<: *ts-microservice-env
+    ingresses:
+      gateway:
+        enabled: true
+        name: gateway
+        hostname: api.relegatio.localhost
+        path: /graphql
+        annotations:
+          nginx.ingress.kubernetes.io/rewrite-target: /graphql
 
   notifications:
     <<: *ts-microservice-config
@@ -58,6 +60,9 @@ microservices:
 
 mysql:
   fullnameOverride: mysql
+  auth:
+    username: admin
+    password: admin
   primary:
     persistence:
         enabled: true
@@ -108,16 +113,6 @@ mailpit:
     enabled: true
     hostname: mailpit.relegatio.localhost
     ingressClassName: nginx
-
-ingress:
-  gateway:
-    enabled: true
-    serviceName: gateway
-    servicePort: 3000
-    hostname: api.relegatio.localhost
-    path: /graphql
-    annotations:
-      nginx.ingress.kubernetes.io/rewrite-target: /graphql
 
 imagePullSecrets:
   - name: ghcr-secret

@@ -1,9 +1,9 @@
 import { createParamDecorator, ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { Auth } from '@lib/types/auth.type';
+import { JwtContent } from '@lib/types/jwt-content.type';
 
-export const AuthCtx = createParamDecorator<{ failSafe: boolean }, ExecutionContext, Auth>((data, context) => {
+export const AuthCtx = createParamDecorator<{ failSafe: boolean }, ExecutionContext, JwtContent>((data, context) => {
     const request = context.switchToHttp().getRequest<{ headers: { [k: string]: string } }>();
-    let auth: Auth | null;
+    let auth: JwtContent | null;
 
     try {
         auth = JSON.parse(request.headers['x-internal']);

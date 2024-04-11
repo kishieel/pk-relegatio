@@ -1,0 +1,104 @@
+{{- range $serviceName, $serviceConfig := .Values.microservices }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $serviceName }}
+  labels:
+    name: {{ $serviceName }}
+spec:
+  selector:
+    matchLabels:
+      name: {{ $serviceName }}
+  template:
+    metadata:
+      labels:
+        name: {{ $serviceName }}
+    spec:
+      imagePullSecrets:
+        {{- toYaml $.Values.imagePullSecrets | nindent 8 }}
+      {{- if ($serviceConfig.development).enabled }}
+      securityContext:
+        runAsUser: {{ $.Values.localUid }}
+        runAsGroup: {{ $.Values.localGid }}
+        fsGroup: {{ $.Values.localGid }}
+      {{- end }}
+      containers:
+        - name: {{ $serviceName }}
+          image: {{ $serviceConfig.image }}
+          ports:
+            - containerPort: {{ $serviceConfig.port }}
+          imagePullPolicy: IfNotPresent
+          env:
+          {{- range $envName, $envValue := $serviceConfig.env }}
+            - name: {{ $envName }}
+              value: "{{ $envValue }}"
+          {{- end }}
+          {{- if ($serviceConfig.development).enabled }}
+          volumeMounts:
+            - mountPath: /app
+              name: {{ $serviceName }}-code
+          {{- end }}
+          livenessProbe:
+            httpGet:
+              port: {{ $serviceConfig.port }}
+              path: /graphql?query=%7B__typename%7D
+              httpHeaders:
+                - name: apollo-require-preflight
+                  value: "true"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /graphql?query=%7B__typename%7D
+              port: {{ default 3000 $serviceConfig.port }}
+              httpHeaders:
+                - name: apollo-require-preflight
+                  value: "true"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+      {{- if ($serviceConfig.development).enabled }}
+      volumes:
+        - name: {{ $serviceName }}-code
+          hostPath:
+            path: {{ ($serviceConfig.development).source }}
+            type: Directory
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $serviceName }}
+spec:
+  selector:
+    name: {{ $serviceName }}
+  ports:
+    - port: 3000
+      targetPort: 3000
+---
+{{- range $ingressName, $ingressConfig := $serviceConfig.ingresses }}
+{{- if $ingressConfig.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $ingressName }}
+  annotations:
+    {{- toYaml $ingressConfig.annotations | nindent 4 }}
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: {{ $ingressConfig.hostname }}
+      http:
+        paths:
+          - path: {{ $ingressConfig.path }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $serviceName }}
+                port:
+                  number: {{ $serviceConfig.port }}
+---
+{{- end }}
+{{- end }}
+{{- end }}
