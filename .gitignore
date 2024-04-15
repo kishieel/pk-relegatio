@@ -4,3 +4,8 @@
 
 # Environment
 .env
+
+# Yalc
+.yalc/
+.yalc.lock
+.yalc.yaml

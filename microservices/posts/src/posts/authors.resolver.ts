@@ -9,6 +9,6 @@ export class AuthorsResolver {
 
     @ResolveField(() => [Post])
     async posts(@Parent() author: Author): Promise<Post[]> {
-        return this.postsService.getByAuthorUuid(author.uuid);
+        return this.postsService.getByAuthorUuid(author.id);
     }
 }

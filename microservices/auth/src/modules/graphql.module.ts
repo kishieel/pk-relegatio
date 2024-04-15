@@ -4,6 +4,7 @@ import { ApolloFederationDriver, ApolloFederationDriverConfig } from '@nestjs/ap
 import { join } from 'path';
 import { GraphQLDateTimeISO, GraphQLUUID } from 'graphql-scalars';
 import { ApolloServerPluginInlineTrace } from '@apollo/server/plugin/inlineTrace';
+import { createSubgraphContext } from '@kishieel/relegatio-common';
 
 @Module({
     imports: [
@@ -24,7 +25,10 @@ import { ApolloServerPluginInlineTrace } from '@apollo/server/plugin/inlineTrace
             },
             csrfPrevention: false,
             plugins: [ApolloServerPluginInlineTrace()],
+            autoTransformHttpErrors: true,
+            context: ({ req }) => createSubgraphContext(req),
         }),
     ],
 })
-export class GraphqlModule {}
+export class GraphqlModule {
+}

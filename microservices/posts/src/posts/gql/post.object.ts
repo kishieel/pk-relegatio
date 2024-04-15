@@ -1,14 +1,14 @@
 import { Directive, Field, ObjectType } from '@nestjs/graphql';
-import { GraphQLDateTimeISO, GraphQLUUID } from 'graphql-scalars';
+import { GraphQLDateTimeISO, GraphQLCuid } from 'graphql-scalars';
 
 @ObjectType()
 export class Post {
-    @Field(() => GraphQLUUID)
-    uuid: string;
+    @Field(() => GraphQLCuid)
+    id: string;
 
-    @Field(() => GraphQLUUID)
+    @Field(() => GraphQLCuid)
     @Directive('@inaccessible')
-    authorUuid: string;
+    authorId: string;
 
     @Field()
     title: string;

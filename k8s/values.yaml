@@ -1,9 +1,12 @@
 x-templates:
   ts-microservice-config: &ts-microservice-config
     port: 3000
+    probe: graphql
   ts-microservice-env: &ts-microservice-env
     HOST: 0.0.0.0
     PORT: "3000"
+    RABBIT_RMQ_URL: amqp://admin:admin@rabbit:5672
+    RABBIT_HTTP_URL: http://admin:admin@rabbit:15672
 
 microservices:
   auth:
@@ -12,11 +15,14 @@ microservices:
     development:
       enabled: true
       source: /volumes/microservices/auth
+    setup:
+      prisma.sh: |
+        #!/usr/bin/env bash
+        yarn prisma migrate deploy
+        yarn prisma generate
     env:
       <<: *ts-microservice-env
-      DATABASE_URL: mysql://admin:admin@mysql:3306/auth
-      RABBIT_RMQ_URL: amqp://admin:admin@rabbit:5672
-      RABBIT_HTTP_URL: http://admin:admin@rabbit:15672
+      DATABASE_URL: mysql://root:root@mysql:3306/auth
       JWT_SECRET: secret
 
   gateway:
@@ -27,6 +33,8 @@ microservices:
       source: /volumes/microservices/gateway
     env:
       <<: *ts-microservice-env
+      POSTS_GRAPHQL_URL: http://posts:3000/graphql
+      AUTH_GRAPHQL_URL: http://auth:3000/graphql
     ingresses:
       gateway:
         enabled: true
@@ -42,6 +50,7 @@ microservices:
     development:
       enabled: true
       source: /volumes/microservices/notifications
+    probe: rest
     env:
       <<: *ts-microservice-env
       DATABASE_URL:
@@ -55,17 +64,22 @@ microservices:
       source: /volumes/microservices/posts
     env:
       <<: *ts-microservice-env
-      DATABASE_URL:
-        value: posts
+      DATABASE_URL: http://admin:admin@couchdb-svc-couchdb:5984
 
 mysql:
   fullnameOverride: mysql
   auth:
     username: admin
     password: admin
+    rootPassword: root
+    defaultAuthenticationPlugin: caching_sha2_password
+  initdbScripts:
+    create-database.sql: |
+      CREATE DATABASE IF NOT EXISTS auth;
+      GRANT ALL PRIVILEGES ON auth.* TO 'admin'@'%';
   primary:
     persistence:
-        enabled: true
+      enabled: true
 
 redis:
   fullnameOverride: redis
@@ -92,6 +106,8 @@ couchdb:
   enableSearch: true
   persistentVolume:
     enabled: true
+  erlangFlags:
+    setcookie: make-something-up
   autoSetup:
     enabled: true
     defaultDatabases:

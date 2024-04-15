@@ -1,35 +1,14 @@
 import { Module } from '@nestjs/common';
 import { PostsModule } from './posts/posts.module';
-import { GraphQLModule } from '@nestjs/graphql';
-import { GraphQLDateTimeISO, GraphQLUUID } from 'graphql-scalars';
-import { ApolloFederationDriver, ApolloFederationDriverConfig } from '@nestjs/apollo';
-import { join } from 'path';
-import { ApolloServerPluginInlineTrace } from '@apollo/server/plugin/inlineTrace';
 import { AuthorsModule } from '@app/authors/authors.module';
+import { GraphqlModule } from '@app/modules/graphql.module';
+import { RabbitModule } from '@app/modules/rabbit.module';
+import { UsersModule } from '@app/users/users.module';
+import { ConfigModule } from '@app/configs/config.module';
+import { CouchdbModule } from '@app/couchdb/couchdb.module';
 
 @Module({
-    imports: [
-        GraphQLModule.forRoot<ApolloFederationDriverConfig>({
-            driver: ApolloFederationDriver,
-            autoSchemaFile: {
-                federation: 2,
-                path: join(process.cwd(), 'graphql/schema.graphql'),
-            },
-            sortSchema: true,
-            playground: false,
-            buildSchemaOptions: {
-                orphanedTypes: [],
-            },
-            resolvers: {
-                [GraphQLUUID.name]: GraphQLUUID,
-                [GraphQLDateTimeISO.name]: GraphQLDateTimeISO,
-            },
-            csrfPrevention: false,
-            plugins: [ApolloServerPluginInlineTrace()],
-        }),
-        AuthorsModule,
-        PostsModule,
-    ],
+    imports: [GraphqlModule, RabbitModule, ConfigModule, CouchdbModule, AuthorsModule, PostsModule, UsersModule],
 })
 export class AppModule {
 }

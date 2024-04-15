@@ -1,6 +1,6 @@
-import { Auth } from '@kishieel/nestjs-distributed-shared';
+import { JwtContent } from '@kishieel/relegatio-common';
 
 export type DecodeJwtPayload = {
     request: { jwt: string };
-    response: Auth;
+    response: JwtContent;
 };

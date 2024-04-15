@@ -6,7 +6,7 @@ export class AuthorsService {
     async getPaginated(): Promise<Author[]> {
         return [
             {
-                uuid: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
+                id: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
                 firstName: 'Adam',
                 lastName: 'Nowak',
                 createdAt: new Date(),
@@ -15,9 +15,9 @@ export class AuthorsService {
         ];
     }
 
-    async getByUuid(uuid: string): Promise<Author> {
+    async getById(id: string): Promise<Author> {
         return {
-            uuid: uuid,
+            id: id,
             firstName: 'Adam',
             lastName: 'Nowak',
             createdAt: new Date(),

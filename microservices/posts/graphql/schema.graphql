@@ -5,34 +5,51 @@
 type Author {
   createdAt: DateTimeISO!
   firstName: String!
+  id: Cuid!
   lastName: String!
   posts: [Post!]!
   updatedAt: DateTimeISO!
-  uuid: UUID!
 }
+
+"""
+A field whose value conforms to the standard cuid format as specified in https://github.com/ericelliott/cuid#broken-down
+"""
+scalar Cuid @specifiedBy(url: "https://github.com/ericelliott/cuid#broken-down")
 
 """
 A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.This scalar is serialized to a string in ISO 8601 format and parsed from a string in ISO 8601 format.
 """
 scalar DateTimeISO
 
+type Mutation {
+  postCreate(input: PostCreateInput!): Post!
+  postDelete(id: Cuid!): Boolean!
+  postUpdate(id: Cuid!, input: PostUpdateInput!): Post!
+}
+
 type Post {
   author: Author!
-  authorUuid: UUID!
+  authorId: Cuid!
   content: String!
   createdAt: DateTimeISO!
+  id: Cuid!
   slug: String!
   title: String!
   updatedAt: DateTimeISO!
-  uuid: UUID!
+}
+
+input PostCreateInput {
+  content: String!
+  title: String!
+}
+
+input PostUpdateInput {
+  content: String
+  title: String
 }
 
 type Query {
   authors: [Author!]!
+  post(id: Cuid!): Post!
   posts: [Post!]!
 }
-
-"""
-A field whose value is a generic Universally Unique Identifier: https://en.wikipedia.org/wiki/Universally_unique_identifier.
-"""
-scalar UUID

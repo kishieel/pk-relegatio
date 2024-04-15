@@ -1,13 +1,17 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Prisma } from '.prisma/client';
 import { AuthToken } from '@app/auth/gql/auth-token.object';
 import { JwtService } from '@nestjs/jwt';
 import { JwtContent } from '@kishieel/relegatio-common';
+import { AuthConfig, AuthConfigKey } from '@app/configs/auth.config';
 
 @Injectable()
 export class TokensService {
-    constructor(private readonly jwtService: JwtService) {
-    }
+    constructor(
+        private readonly jwtService: JwtService,
+        @Inject(AuthConfigKey)
+        private readonly authConfig: AuthConfig,
+    ) {}
 
     async createAuthTokens(user: Prisma.UserGetPayload<true>): Promise<AuthToken> {
         const jwtClaims: JwtContent = {
@@ -22,18 +26,24 @@ export class TokensService {
         };
 
         const [accessToken, refreshToken] = await Promise.all([
-            this.jwtService.signAsync({ sub: user.id, ...jwtClaims }, { expiresIn: '15m' }),
-            this.jwtService.signAsync({ sub: user.id }, { expiresIn: '1d' }),
+            this.jwtService.signAsync(
+                { sub: user.id, ...jwtClaims },
+                { expiresIn: this.authConfig.accessTokenExpiresIn },
+            ),
+            this.jwtService.signAsync(
+                { sub: user.id, ...jwtClaims },
+                { expiresIn: this.authConfig.refreshTokenExpiresIn },
+            ),
         ]);
 
         return { accessToken, refreshToken };
     }
 
-    async decodeToken(jwt: string): Promise<JwtContent> {
+    async verifyToken(jwt: string): Promise<JwtContent> {
         try {
             return await this.jwtService.verifyAsync<JwtContent>(jwt);
         } catch (error) {
-            throw new UnauthorizedException(error, 'Invalid or expired token');
+            throw new UnauthorizedException('Invalid or expired token');
         }
     }
 }

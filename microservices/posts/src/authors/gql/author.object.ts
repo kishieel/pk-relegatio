@@ -1,10 +1,10 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { GraphQLDateTimeISO, GraphQLUUID } from 'graphql-scalars';
+import { GraphQLCuid, GraphQLDateTimeISO } from 'graphql-scalars';
 
 @ObjectType()
 export class Author {
-    @Field(() => GraphQLUUID)
-    uuid: string;
+    @Field(() => GraphQLCuid)
+    id: string;
 
     @Field()
     firstName: string;

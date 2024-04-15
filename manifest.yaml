@@ -204,8 +204,8 @@ type: Opaque
 data:
   adminUsername: "YWRtaW4="
   adminPassword: "YWRtaW4="
-  erlangCookie: "OWJIcEF3cjEwVG5oR1ZieXRsbFc="
-  cookieAuthSecret: "czVJcjNGYkxxemZoeFFFcWNsOGc="
+  erlangCookie: "Rzdvdk5ZWjl5dzdKQm5OV1NYa2Y="
+  cookieAuthSecret: "UmtQYXlSS1E4bGRsWGVWekFHVzY="
 ---
 # Source: k8s/charts/mysql/templates/secrets.yaml
 apiVersion: v1
@@ -221,7 +221,7 @@ metadata:
     helm.sh/chart: mysql-10.1.0
 type: Opaque
 data:
-  mysql-root-password: "MEtLU0o0QnJ0cA=="
+  mysql-root-password: "cm9vdA=="
   mysql-password: "YWRtaW4="
 ---
 # Source: k8s/charts/rabbitmq/templates/config-secret.yaml
@@ -256,7 +256,7 @@ metadata:
 type: Opaque
 data:
   rabbitmq-password: "YWRtaW4="
-  rabbitmq-erlang-cookie: "VDRWUUpZa0c4d29oWlhIOTJyMVdUdkdEWFV4ZG13b0s="
+  rabbitmq-erlang-cookie: "ZWVXOUJZU1ROUmpnb2lYNWp2cDFYZ1B3OWhhM0pNWks="
 ---
 # Source: k8s/charts/redis/templates/secret.yaml
 apiVersion: v1
@@ -272,7 +272,7 @@ metadata:
     helm.sh/chart: redis-19.0.1
 type: Opaque
 data:
-  redis-password: "ekM5cUoxV2s3MA=="
+  redis-password: "T1NLdEM5ZGNwTg=="
 ---
 # Source: k8s/charts/couchdb/templates/configmap.yaml
 apiVersion: v1
@@ -315,7 +315,7 @@ metadata:
 data:
   my.cnf: |-
     [mysqld]
-    default_authentication_plugin=mysql_native_password
+    default_authentication_plugin=caching_sha2_password
     skip-name-resolve
     explicit_defaults_for_timestamp
     basedir=/opt/bitnami/mysql
@@ -342,6 +342,25 @@ data:
     port=3306
     socket=/opt/bitnami/mysql/tmp/mysql.sock
     pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+---
+# Source: k8s/charts/mysql/templates/primary/initialization-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-init-scripts
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: mysql
+    app.kubernetes.io/version: 8.0.36
+    helm.sh/chart: mysql-10.1.0
+    app.kubernetes.io/component: primary
+data:
+  create-database.sql: |
+    CREATE DATABASE IF NOT EXISTS auth;
+    GRANT ALL PRIVILEGES ON auth.* TO 'admin'@'%';
+    GRANT ALL PRIVILEGES ON auth-shadow.* TO 'admin'@'%';
 ---
 # Source: k8s/charts/redis/templates/configmap.yaml
 apiVersion: v1
@@ -565,6 +584,17 @@ data:
     ARGS+=("--include" "/opt/bitnami/redis/etc/redis.conf")
     ARGS+=("--include" "/opt/bitnami/redis/etc/replica.conf")
     exec redis-server "${ARGS[@]}"
+---
+# Source: k8s/templates/nestjs.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auth-prisma-sh-configmap
+data:
+  prisma.sh:  |
+    #!/usr/bin/env bash
+    yarn prisma migrate deploy
+    yarn prisma generate
 ---
 # Source: k8s/charts/rabbitmq/templates/role.yaml
 kind: Role
@@ -1052,7 +1082,7 @@ spec:
           imagePullPolicy: IfNotPresent
           env:
             - name: DATABASE_URL
-              value: "mysql://admin:admin@mysql:3306/auth"
+              value: "mysql://root:root@mysql:3306/auth"
             - name: HOST
               value: "0.0.0.0"
             - name: JWT_SECRET
@@ -1068,21 +1098,25 @@ spec:
               name: auth-code
           livenessProbe:
             httpGet:
+              path:  /graphql?query=%7B__typename%7D 
               port: 3000
-              path: /graphql?query=%7B__typename%7D
+              
               httpHeaders:
                 - name: apollo-require-preflight
                   value: "true"
+              
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
           readinessProbe:
             httpGet:
-              path: /graphql?query=%7B__typename%7D
+              path:  /graphql?query=%7B__typename%7D 
               port: 3000
+              
               httpHeaders:
                 - name: apollo-require-preflight
                   value: "true"
+              
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
@@ -1130,21 +1164,25 @@ spec:
               name: gateway-code
           livenessProbe:
             httpGet:
+              path:  /graphql?query=%7B__typename%7D 
               port: 3000
-              path: /graphql?query=%7B__typename%7D
+              
               httpHeaders:
                 - name: apollo-require-preflight
                   value: "true"
+              
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
           readinessProbe:
             httpGet:
-              path: /graphql?query=%7B__typename%7D
+              path:  /graphql?query=%7B__typename%7D 
               port: 3000
+              
               httpHeaders:
                 - name: apollo-require-preflight
                   value: "true"
+              
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
@@ -1194,21 +1232,17 @@ spec:
               name: notifications-code
           livenessProbe:
             httpGet:
+              path:  /health 
               port: 3000
-              path: /graphql?query=%7B__typename%7D
-              httpHeaders:
-                - name: apollo-require-preflight
-                  value: "true"
+              
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
           readinessProbe:
             httpGet:
-              path: /graphql?query=%7B__typename%7D
+              path:  /health 
               port: 3000
-              httpHeaders:
-                - name: apollo-require-preflight
-                  value: "true"
+              
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
@@ -1258,21 +1292,25 @@ spec:
               name: posts-code
           livenessProbe:
             httpGet:
+              path:  /graphql?query=%7B__typename%7D 
               port: 3000
-              path: /graphql?query=%7B__typename%7D
+              
               httpHeaders:
                 - name: apollo-require-preflight
                   value: "true"
+              
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
           readinessProbe:
             httpGet:
-              path: /graphql?query=%7B__typename%7D
+              path:  /graphql?query=%7B__typename%7D 
               port: 3000
+              
               httpHeaders:
                 - name: apollo-require-preflight
                   value: "true"
+              
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
@@ -1307,7 +1345,7 @@ spec:
         release: release-name
       annotations:
         checksum/config: 5ee8196556785abb0e8ca30fa875d97e78bafc04da5ce13f7e3ea240d022e193
-        checksum/secret: efe64fa8eacab3c02dd7d35ddf819060c94d7f81cd7ed0d9be10daef538c31b8
+        checksum/secret: 76075f96c06c608994db8b0653766e2e9b9786044e81f1b40d784d04e00085a4
     spec:
       serviceAccountName: couchdb-couchdb
       initContainers:
@@ -1440,7 +1478,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/configuration: 01d8581e1402ebd1ec2122efc1b6801f2c81255db7e92ef13535f5226e14eed4
+        checksum/configuration: d640f104cfbe85517e97b98d76f48ff697a88b6638cd59f0818ca5741af02c2d
       labels:
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/managed-by: Helm
@@ -1622,6 +1660,8 @@ spec:
             - name: empty-dir
               mountPath: /opt/bitnami/mysql/logs
               subPath: app-logs-dir
+            - name: custom-init-scripts
+              mountPath: /docker-entrypoint-initdb.d
             - name: config
               mountPath: /opt/bitnami/mysql/conf/my.cnf
               subPath: my.cnf
@@ -1629,6 +1669,9 @@ spec:
         - name: config
           configMap:
             name: mysql
+        - name: custom-init-scripts
+          configMap:
+            name: mysql-init-scripts
         - name: empty-dir
           emptyDir: {}
   volumeClaimTemplates:
@@ -1677,7 +1720,7 @@ spec:
         helm.sh/chart: rabbitmq-13.0.0
       annotations:
         checksum/config: 0845d01890a928270266dda9d6d6e4b74199bd3c5b77b7bc23b447f20d0113e6
-        checksum/secret: bd3c5f7cf8b48e9408fb6d8c19e09a9a9277d30f5dcad51af395acf5422a6375
+        checksum/secret: f253b3ca524880356ac265d37480f01923c8a35a1e790af8cc8a4f4bbaeb2997
     spec:
       
       serviceAccountName: rabbit
@@ -1900,7 +1943,7 @@ spec:
         checksum/configmap: 86bcc953bb473748a3d3dc60b7c11f34e60c93519234d4c37f42e22ada559d47
         checksum/health: aff24913d801436ea469d8d374b2ddb3ec4c43ee7ab24663d5f8ff1a1b6991a9
         checksum/scripts: bb405ab6e14129d9c1652d99ffde3146c358de2ef89164a4c63bb0b1894e7537
-        checksum/secret: adb0844c21eca5ba508be41de3b5b1aadf3fac73cf89dbef010b5cd2c371355c
+        checksum/secret: 1b636c04177cd3d42da9394c2e433832ada7bf0f4a43c325305f53866d2b953f
     spec:
       
       securityContext:
@@ -2080,7 +2123,7 @@ spec:
         checksum/configmap: 86bcc953bb473748a3d3dc60b7c11f34e60c93519234d4c37f42e22ada559d47
         checksum/health: aff24913d801436ea469d8d374b2ddb3ec4c43ee7ab24663d5f8ff1a1b6991a9
         checksum/scripts: bb405ab6e14129d9c1652d99ffde3146c358de2ef89164a4c63bb0b1894e7537
-        checksum/secret: d83e4c75bf3fffd2cb0ea8310d4d773d131f26e8d7c868f91ef1828779ec6c83
+        checksum/secret: 2d491aed77a7966baf99aa953b77d92bd6f0380a58d8a0b3bdda7f300d9d0bd3
     spec:
       
       securityContext:
@@ -2385,3 +2428,63 @@ spec:
                   key: adminPassword
   backoffLimit: 2
   ttlSecondsAfterFinished: 600
+---
+# Source: k8s/templates/nestjs.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: auth-prisma-sh
+  annotations:
+    "helm.sh/hook": post-upgrade
+    "helm.sh/hook-weight": "5"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      name: auth-prisma-sh
+    spec:
+      restartPolicy: Never
+      imagePullSecrets:
+        - name: ghcr-secret
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        - name: auth-prisma-sh
+          image: ghcr.io/kishieel/relegatio-auth:1.0.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: DATABASE_URL
+              value: "mysql://root:root@mysql:3306/auth"
+            - name: HOST
+              value: "0.0.0.0"
+            - name: JWT_SECRET
+              value: "secret"
+            - name: PORT
+              value: "3000"
+            - name: RABBIT_HTTP_URL
+              value: "http://admin:admin@rabbit:15672"
+            - name: RABBIT_RMQ_URL
+              value: "amqp://admin:admin@rabbit:5672"
+          command:
+            - /bin/prisma.sh
+          volumeMounts:
+            - mountPath: /app
+              name: auth-code
+            - name: auth-prisma-sh-configmap
+              mountPath: /bin/prisma.sh
+              subPath: prisma.sh
+              readOnly: true
+      volumes:
+        - name: auth-code
+          hostPath:
+            path: /volumes/microservices/auth
+            type: Directory
+        - name: auth-prisma-sh-configmap
+          configMap:
+            name: auth-prisma-sh-configmap
+            defaultMode: 0777 # @todo: somehow I don't like this, check if I can set owner of this file to container user
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 30
+  activeDeadlineSeconds: 30

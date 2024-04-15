@@ -4,10 +4,10 @@ import { SignInInput } from '@app/auth/gql/sign-in.input';
 import { RefreshTokenInput } from '@app/auth/gql/refresh-token.input';
 import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '@app/prisma/prisma.factory';
-import { throwIf } from '@app/utils/throw-if.function';
 import { hash, verify } from 'argon2';
 import { AuthEmitter } from '@app/auth/auth.emitter';
 import { TokensService } from '@app/tokens/tokens.service';
+import { throwIf } from '@kishieel/relegatio-common';
 
 @Injectable()
 export class AuthService {
@@ -44,7 +44,9 @@ export class AuthService {
     }
 
     async refreshToken(input: RefreshTokenInput): Promise<AuthToken> {
-        const content = await this.tokensService.decodeToken(input.token);
+        const content = await this.tokensService.verifyToken(input.token);
+
+        console.log(content);
 
         const user = await this.prismaService.user.findUnique({ where: { id: content.user.id } });
         throwIf(!user, new UnauthorizedException('Invalid or expired token'));

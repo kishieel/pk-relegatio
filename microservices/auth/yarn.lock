@@ -998,18 +998,6 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@kishieel/nestjs-distributed-shared@0.0.8":
-  version "0.0.8"
-  resolved "https://npm.pkg.github.com/download/@kishieel/nestjs-distributed-shared/0.0.8/6fa2d158a199d5e2eb9304d348322174370eb8c0#6fa2d158a199d5e2eb9304d348322174370eb8c0"
-  integrity sha512-VFyq5ppyfyAF2HwE5EHu1kfukAU/nKfozsx9FJGtxiUxXOXLoJKBDFU8kTRRZDjnwc8OyMq3TSDZZMpZjfkT5Q==
-  dependencies:
-    "@nestjs/common" "^10.0.0"
-    "@nestjs/core" "^10.0.0"
-    "@nestjs/jwt" "10.1.1"
-    "@nestjs/platform-express" "^10.0.0"
-    reflect-metadata "^0.1.13"
-    rxjs "^7.8.1"
-
 "@kishieel/relegatio-common@1.0.1":
   version "1.0.1"
   resolved "https://npm.pkg.github.com/download/@kishieel/relegatio-common/1.0.1/4e117ec106d62c9d6a44268a079253057097a6ab#4e117ec106d62c9d6a44268a079253057097a6ab"
@@ -1022,12 +1010,25 @@
     reflect-metadata "^0.1.13"
     rxjs "^7.8.1"
 
-"@kishieel/relegatio-messaging@1.0.3":
-  version "1.0.3"
-  resolved "https://npm.pkg.github.com/download/@kishieel/relegatio-messaging/1.0.3/a9ffc4d8c80f2748927315d74e260088ce015d09#a9ffc4d8c80f2748927315d74e260088ce015d09"
-  integrity sha512-0Sr6XKFjLd7Cqh6Nd4wvY2qTIr4zFQ5o4C8M19BEMmxK+L12fFY0hUrNRyWBXvv7E4CBxJRuP+YRLtf1eeeWtg==
+"@kishieel/relegatio-common@1.0.6":
+  version "1.0.6"
+  resolved "https://npm.pkg.github.com/download/@kishieel/relegatio-common/1.0.6/37ad05aa6d156ae3f69c4eb5fb12b8a7aa99651e#37ad05aa6d156ae3f69c4eb5fb12b8a7aa99651e"
+  integrity sha512-DKYn8WdQeOh9vuyeVjGcJLemytBBf5d7eiXzxPkAqQuhfS8gupYc0IBbHAO+YIRyByOB9EOsVUofoeIwKNInbQ==
   dependencies:
-    "@kishieel/nestjs-distributed-shared" "0.0.8"
+    "@nestjs/common" "^10.0.0"
+    "@nestjs/core" "^10.0.0"
+    "@nestjs/graphql" "12.1.1"
+    "@nestjs/jwt" "10.1.1"
+    "@nestjs/platform-express" "^10.0.0"
+    reflect-metadata "^0.1.13"
+    rxjs "^7.8.1"
+
+"@kishieel/relegatio-messaging@1.0.4":
+  version "1.0.4"
+  resolved "https://npm.pkg.github.com/download/@kishieel/relegatio-messaging/1.0.4/f7180a425f7ce096f3ccb63944a09c00eb9f8145#f7180a425f7ce096f3ccb63944a09c00eb9f8145"
+  integrity sha512-1SQfIjqrK9s2bLgbCHu2slDegdX23tsr6OeNB8vqf9qDbwaeNTvKJe3DV1mWk8ExhPwbKInrTgOUvI3h1OjBOQ==
+  dependencies:
+    "@kishieel/relegatio-common" "1.0.1"
     "@nestjs/axios" "3.0.0"
     "@nestjs/common" "^10.0.0"
     "@nestjs/core" "^10.0.0"
@@ -5906,6 +5907,7 @@ which@^2.0.1:
     isexe "^2.0.0"
 
 "wrap-ansi-cjs@npm:wrap-ansi@^7.0.0", wrap-ansi@^7.0.0:
+  name wrap-ansi-cjs
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
   integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==

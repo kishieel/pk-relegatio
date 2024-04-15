@@ -4,6 +4,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { BindingsModule, Eventbus, MessagingModule, Queue } from '@kishieel/relegatio-messaging';
 import { join } from 'path';
+import { HealthModule } from './health/health.module';
 
 @Module({
     imports: [
@@ -46,6 +47,7 @@ import { join } from 'path';
             },
         }),
         MailingModule,
+        HealthModule,
     ],
 })
 export class AppModule {}
