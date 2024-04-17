@@ -1,23 +1,9 @@
 import { Global, Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { CouchdbService, createCouchdbService } from '@app/couchdb/couchdb.factory';
-import { CouchdbConfig, CouchdbConfigToken } from '@app/configs/couchdb.config';
+import { CouchdbService } from '@app/couchdb/couchdb.service';
 
 @Global()
 @Module({
-    imports: [ConfigModule],
-    providers: [
-        {
-            provide: CouchdbService,
-            useFactory: (configService: ConfigService) => {
-                const couchdbConfig = configService.getOrThrow<CouchdbConfig>(CouchdbConfigToken);
-                return createCouchdbService(couchdbConfig);
-            },
-            inject: [ConfigService],
-        },
-    ],
+    providers: [CouchdbService],
     exports: [CouchdbService],
 })
-export class CouchdbModule {
-
-}
+export class CouchdbModule {}

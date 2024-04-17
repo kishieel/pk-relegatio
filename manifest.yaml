@@ -204,8 +204,8 @@ type: Opaque
 data:
   adminUsername: "YWRtaW4="
   adminPassword: "YWRtaW4="
-  erlangCookie: "Rzdvdk5ZWjl5dzdKQm5OV1NYa2Y="
-  cookieAuthSecret: "UmtQYXlSS1E4bGRsWGVWekFHVzY="
+  erlangCookie: "bWFrZS1zb21ldGhpbmctdXA="
+  cookieAuthSecret: "Y29va2llLWF1dGgtc2VjcmV0"
 ---
 # Source: k8s/charts/mysql/templates/secrets.yaml
 apiVersion: v1
@@ -256,7 +256,7 @@ metadata:
 type: Opaque
 data:
   rabbitmq-password: "YWRtaW4="
-  rabbitmq-erlang-cookie: "ZWVXOUJZU1ROUmpnb2lYNWp2cDFYZ1B3OWhhM0pNWks="
+  rabbitmq-erlang-cookie: "NzVzQzdES1Q1MTRRRjcxaG9OODQ3Y0Y0aE5JZGNNcU0="
 ---
 # Source: k8s/charts/redis/templates/secret.yaml
 apiVersion: v1
@@ -272,7 +272,7 @@ metadata:
     helm.sh/chart: redis-19.0.1
 type: Opaque
 data:
-  redis-password: "T1NLdEM5ZGNwTg=="
+  redis-password: "bUdzbVBxTTNoag=="
 ---
 # Source: k8s/charts/couchdb/templates/configmap.yaml
 apiVersion: v1
@@ -297,7 +297,7 @@ data:
 
   seedlistinifile: |
     [cluster]
-    seedlist = couchdb@couchdb-couchdb-0.couchdb-couchdb.default.svc.cluster.local,couchdb@couchdb-couchdb-1.couchdb-couchdb.default.svc.cluster.local
+    seedlist = couchdb@couchdb-couchdb-0.couchdb-couchdb.default.svc.cluster.local,couchdb@couchdb-couchdb-1.couchdb-couchdb.default.svc.cluster.local,couchdb@couchdb-couchdb-2.couchdb-couchdb.default.svc.cluster.local
 ---
 # Source: k8s/charts/mysql/templates/primary/configmap.yaml
 apiVersion: v1
@@ -360,7 +360,6 @@ data:
   create-database.sql: |
     CREATE DATABASE IF NOT EXISTS auth;
     GRANT ALL PRIVILEGES ON auth.* TO 'admin'@'%';
-    GRANT ALL PRIVILEGES ON auth-shadow.* TO 'admin'@'%';
 ---
 # Source: k8s/charts/redis/templates/configmap.yaml
 apiVersion: v1
@@ -585,14 +584,14 @@ data:
     ARGS+=("--include" "/opt/bitnami/redis/etc/replica.conf")
     exec redis-server "${ARGS[@]}"
 ---
-# Source: k8s/templates/nestjs.yaml
+# Source: k8s/templates/nodejs.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: auth-prisma-sh-configmap
 data:
   prisma.sh:  |
-    #!/usr/bin/env bash
+    #!/usr/bin/env sh
     yarn prisma migrate deploy
     yarn prisma generate
 ---
@@ -918,7 +917,7 @@ spec:
     app.kubernetes.io/name: redis
     app.kubernetes.io/component: replica
 ---
-# Source: k8s/templates/nestjs.yaml
+# Source: k8s/templates/nodejs.yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -930,7 +929,19 @@ spec:
     - port: 3000
       targetPort: 3000
 ---
-# Source: k8s/templates/nestjs.yaml
+# Source: k8s/templates/nodejs.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+spec:
+  selector:
+    name: frontend
+  ports:
+    - port: 3000
+      targetPort: 3000
+---
+# Source: k8s/templates/nodejs.yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -942,7 +953,7 @@ spec:
     - port: 3000
       targetPort: 3000
 ---
-# Source: k8s/templates/nestjs.yaml
+# Source: k8s/templates/nodejs.yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -954,7 +965,7 @@ spec:
     - port: 3000
       targetPort: 3000
 ---
-# Source: k8s/templates/nestjs.yaml
+# Source: k8s/templates/nodejs.yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -1052,7 +1063,7 @@ spec:
         - name: data
           emptyDir: {}
 ---
-# Source: k8s/templates/nestjs.yaml
+# Source: k8s/templates/nodejs.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -1074,13 +1085,16 @@ spec:
         runAsUser: 1000
         runAsGroup: 1000
         fsGroup: 1000
+      
       containers:
         - name: auth
-          image: ghcr.io/kishieel/relegatio-auth:1.0.0
+          image: ghcr.io/kishieel/relegatio-auth:1.0.2
           ports:
             - containerPort: 3000
           imagePullPolicy: IfNotPresent
           env:
+            - name: ACCESS_TOKEN_EXPIRES_IN
+              value: "30d"
             - name: DATABASE_URL
               value: "mysql://root:root@mysql:3306/auth"
             - name: HOST
@@ -1093,30 +1107,35 @@ spec:
               value: "http://admin:admin@rabbit:15672"
             - name: RABBIT_RMQ_URL
               value: "amqp://admin:admin@rabbit:5672"
+            - name: REFRESH_TOKEN_EXPIRES_IN
+              value: "30d"
+          resources:
+            limits:
+              cpu: 2000m 
+              memory: 2Gi
+            requests:
+              cpu: 1000m
+              memory: 1Gi
           volumeMounts:
             - mountPath: /app
               name: auth-code
           livenessProbe:
             httpGet:
-              path:  /graphql?query=%7B__typename%7D 
+              path: /graphql?query=%7B__typename%7D
               port: 3000
-              
               httpHeaders:
                 - name: apollo-require-preflight
                   value: "true"
-              
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
           readinessProbe:
             httpGet:
-              path:  /graphql?query=%7B__typename%7D 
+              path: /graphql?query=%7B__typename%7D
               port: 3000
-              
               httpHeaders:
                 - name: apollo-require-preflight
                   value: "true"
-              
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
@@ -1126,7 +1145,79 @@ spec:
             path: /volumes/microservices/auth
             type: Directory
 ---
-# Source: k8s/templates/nestjs.yaml
+# Source: k8s/templates/nodejs.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  labels:
+    name: frontend
+spec:
+  selector:
+    matchLabels:
+      name: frontend
+  template:
+    metadata:
+      labels:
+        name: frontend
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      
+      containers:
+        - name: frontend
+          image: ghcr.io/kishieel/relegatio-frontend:1.0.1
+          ports:
+            - containerPort: 3000
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: HOST
+              value: "0.0.0.0"
+            - name: PORT
+              value: "3000"
+            - name: REACT_APP_GRAPHQL_URL
+              value: "http://api.relegatio.localhost/graphql"
+          resources:
+            limits:
+              cpu: 2000m 
+              memory: 2Gi
+            requests:
+              cpu: 1000m
+              memory: 1Gi
+          volumeMounts:
+            - mountPath: /app
+              name: frontend-code
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+              httpHeaders:
+                - name: apollo-require-preflight
+                  value: "true"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+              httpHeaders:
+                - name: apollo-require-preflight
+                  value: "true"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+      volumes:
+        - name: frontend-code
+          hostPath:
+            path: /volumes/microservices/frontend
+            type: Directory
+---
+# Source: k8s/templates/nodejs.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -1148,41 +1239,53 @@ spec:
         runAsUser: 1000
         runAsGroup: 1000
         fsGroup: 1000
+      
       containers:
         - name: gateway
-          image: ghcr.io/kishieel/relegatio-gateway:1.0.2
+          image: ghcr.io/kishieel/relegatio-gateway:1.0.3
           ports:
             - containerPort: 3000
           imagePullPolicy: IfNotPresent
           env:
+            - name: AUTH_GRAPHQL_URL
+              value: "http://auth:3000/graphql"
             - name: HOST
               value: "0.0.0.0"
             - name: PORT
               value: "3000"
+            - name: POSTS_GRAPHQL_URL
+              value: "http://posts:3000/graphql"
+            - name: RABBIT_HTTP_URL
+              value: "http://admin:admin@rabbit:15672"
+            - name: RABBIT_RMQ_URL
+              value: "amqp://admin:admin@rabbit:5672"
+          resources:
+            limits:
+              cpu: 2000m 
+              memory: 2Gi
+            requests:
+              cpu: 1000m
+              memory: 1Gi
           volumeMounts:
             - mountPath: /app
               name: gateway-code
           livenessProbe:
             httpGet:
-              path:  /graphql?query=%7B__typename%7D 
+              path: /graphql?query=%7B__typename%7D
               port: 3000
-              
               httpHeaders:
                 - name: apollo-require-preflight
                   value: "true"
-              
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
           readinessProbe:
             httpGet:
-              path:  /graphql?query=%7B__typename%7D 
+              path: /graphql?query=%7B__typename%7D
               port: 3000
-              
               httpHeaders:
                 - name: apollo-require-preflight
                   value: "true"
-              
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
@@ -1192,7 +1295,7 @@ spec:
             path: /volumes/microservices/gateway
             type: Directory
 ---
-# Source: k8s/templates/nestjs.yaml
+# Source: k8s/templates/nodejs.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -1214,9 +1317,10 @@ spec:
         runAsUser: 1000
         runAsGroup: 1000
         fsGroup: 1000
+      
       containers:
         - name: notifications
-          image: ghcr.io/kishieel/relegatio-notifications:1.0.1
+          image: ghcr.io/kishieel/relegatio-notifications:1.0.2
           ports:
             - containerPort: 3000
           imagePullPolicy: IfNotPresent
@@ -1227,22 +1331,37 @@ spec:
               value: "0.0.0.0"
             - name: PORT
               value: "3000"
+            - name: RABBIT_HTTP_URL
+              value: "http://admin:admin@rabbit:15672"
+            - name: RABBIT_RMQ_URL
+              value: "amqp://admin:admin@rabbit:5672"
+          resources:
+            limits:
+              cpu: 2000m 
+              memory: 2Gi
+            requests:
+              cpu: 1000m
+              memory: 1Gi
           volumeMounts:
             - mountPath: /app
               name: notifications-code
           livenessProbe:
             httpGet:
-              path:  /health 
+              path: /health
               port: 3000
-              
+              httpHeaders:
+                - name: apollo-require-preflight
+                  value: "true"
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
           readinessProbe:
             httpGet:
-              path:  /health 
+              path: /health
               port: 3000
-              
+              httpHeaders:
+                - name: apollo-require-preflight
+                  value: "true"
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
@@ -1252,7 +1371,7 @@ spec:
             path: /volumes/microservices/notifications
             type: Directory
 ---
-# Source: k8s/templates/nestjs.yaml
+# Source: k8s/templates/nodejs.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -1274,43 +1393,51 @@ spec:
         runAsUser: 1000
         runAsGroup: 1000
         fsGroup: 1000
+      
       containers:
         - name: posts
-          image: ghcr.io/kishieel/relegatio-posts:1.0.2
+          image: ghcr.io/kishieel/relegatio-posts:1.0.3
           ports:
             - containerPort: 3000
           imagePullPolicy: IfNotPresent
           env:
             - name: DATABASE_URL
-              value: "map[value:posts]"
+              value: "http://admin:admin@couchdb-svc-couchdb:5984"
             - name: HOST
               value: "0.0.0.0"
             - name: PORT
               value: "3000"
+            - name: RABBIT_HTTP_URL
+              value: "http://admin:admin@rabbit:15672"
+            - name: RABBIT_RMQ_URL
+              value: "amqp://admin:admin@rabbit:5672"
+          resources:
+            limits:
+              cpu: 2000m 
+              memory: 2Gi
+            requests:
+              cpu: 1000m
+              memory: 1Gi
           volumeMounts:
             - mountPath: /app
               name: posts-code
           livenessProbe:
             httpGet:
-              path:  /graphql?query=%7B__typename%7D 
+              path: /graphql?query=%7B__typename%7D
               port: 3000
-              
               httpHeaders:
                 - name: apollo-require-preflight
                   value: "true"
-              
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
           readinessProbe:
             httpGet:
-              path:  /graphql?query=%7B__typename%7D 
+              path: /graphql?query=%7B__typename%7D
               port: 3000
-              
               httpHeaders:
                 - name: apollo-require-preflight
                   value: "true"
-              
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
@@ -1319,6 +1446,201 @@ spec:
           hostPath:
             path: /volumes/microservices/posts
             type: Directory
+---
+# Source: k8s/templates/nodejs.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: auth
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: auth
+  minReplicas: 1
+  maxReplicas: 2
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 300
+    scaleUp:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 300
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+---
+# Source: k8s/templates/nodejs.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: frontend
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend
+  minReplicas: 1
+  maxReplicas: 2
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 300
+    scaleUp:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 300
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+---
+# Source: k8s/templates/nodejs.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gateway
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gateway
+  minReplicas: 1
+  maxReplicas: 2
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 300
+    scaleUp:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 300
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+---
+# Source: k8s/templates/nodejs.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: notifications
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: notifications
+  minReplicas: 1
+  maxReplicas: 2
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 300
+    scaleUp:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 300
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+---
+# Source: k8s/templates/nodejs.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: posts
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: posts
+  minReplicas: 1
+  maxReplicas: 2
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 300
+    scaleUp:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 300
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
 ---
 # Source: k8s/charts/couchdb/templates/statefulset.yaml
 apiVersion:  apps/v1
@@ -1331,7 +1653,7 @@ metadata:
     release: release-name
     heritage: Helm
 spec:
-  replicas: 2
+  replicas: 3
   serviceName: couchdb-couchdb
   podManagementPolicy: Parallel
   selector:
@@ -1344,8 +1666,8 @@ spec:
         app: couchdb
         release: release-name
       annotations:
-        checksum/config: 5ee8196556785abb0e8ca30fa875d97e78bafc04da5ce13f7e3ea240d022e193
-        checksum/secret: 76075f96c06c608994db8b0653766e2e9b9786044e81f1b40d784d04e00085a4
+        checksum/config: ffd980ed481b8e2f2e4b7681196e9d490e298d16af669cf277805f8d8058be5a
+        checksum/secret: 0e4c0484267edf7da606442e4d705c83dda7b2a00d9c4fae632ed7344c3534bb
     spec:
       serviceAccountName: couchdb-couchdb
       initContainers:
@@ -1395,7 +1717,7 @@ spec:
                   name: couchdb-couchdb
                   key: erlangCookie
             - name: ERL_FLAGS
-              value: " -name couchdb "
+              value: " -name couchdb  -setcookie make-something-up "
           livenessProbe:
             httpGet:
               path: /_up
@@ -1720,7 +2042,7 @@ spec:
         helm.sh/chart: rabbitmq-13.0.0
       annotations:
         checksum/config: 0845d01890a928270266dda9d6d6e4b74199bd3c5b77b7bc23b447f20d0113e6
-        checksum/secret: f253b3ca524880356ac265d37480f01923c8a35a1e790af8cc8a4f4bbaeb2997
+        checksum/secret: b5e509fd1b4427001af87f20e0a43749a1d7a495ae3b587e6b77d22f0d19a8c7
     spec:
       
       serviceAccountName: rabbit
@@ -1943,7 +2265,7 @@ spec:
         checksum/configmap: 86bcc953bb473748a3d3dc60b7c11f34e60c93519234d4c37f42e22ada559d47
         checksum/health: aff24913d801436ea469d8d374b2ddb3ec4c43ee7ab24663d5f8ff1a1b6991a9
         checksum/scripts: bb405ab6e14129d9c1652d99ffde3146c358de2ef89164a4c63bb0b1894e7537
-        checksum/secret: 1b636c04177cd3d42da9394c2e433832ada7bf0f4a43c325305f53866d2b953f
+        checksum/secret: d55b4f71f0b572c86712849b2ac3b2f3f2f50532b570bcc6103e31dae8aa0898
     spec:
       
       securityContext:
@@ -2123,7 +2445,7 @@ spec:
         checksum/configmap: 86bcc953bb473748a3d3dc60b7c11f34e60c93519234d4c37f42e22ada559d47
         checksum/health: aff24913d801436ea469d8d374b2ddb3ec4c43ee7ab24663d5f8ff1a1b6991a9
         checksum/scripts: bb405ab6e14129d9c1652d99ffde3146c358de2ef89164a4c63bb0b1894e7537
-        checksum/secret: 2d491aed77a7966baf99aa953b77d92bd6f0380a58d8a0b3bdda7f300d9d0bd3
+        checksum/secret: ba47cd700928dd29e1158d2f53d96793ffa47f50a7f25698deb6cc343a2f19dc
     spec:
       
       securityContext:
@@ -2294,6 +2616,9 @@ metadata:
     release: release-name
     heritage: Helm
   annotations:
+      nginx.ingress.kubernetes.io/affinity: "cookie"
+      nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"
+      nginx.ingress.kubernetes.io/session-cookie-name: "couchdb-session"
 spec:
   ingressClassName: nginx
   rules:
@@ -2360,7 +2685,28 @@ spec:
                 port:
                   name: http-stats
 ---
-# Source: k8s/templates/nestjs.yaml
+# Source: k8s/templates/nodejs.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: frontend
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: relegatio.localhost
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 3000
+---
+# Source: k8s/templates/nodejs.yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -2429,13 +2775,13 @@ spec:
   backoffLimit: 2
   ttlSecondsAfterFinished: 600
 ---
-# Source: k8s/templates/nestjs.yaml
+# Source: k8s/templates/nodejs.yaml
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: auth-prisma-sh
   annotations:
-    "helm.sh/hook": post-upgrade
+    "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-weight": "5"
     "helm.sh/hook-delete-policy": hook-succeeded
 spec:
@@ -2452,9 +2798,11 @@ spec:
         fsGroup: 1000
       containers:
         - name: auth-prisma-sh
-          image: ghcr.io/kishieel/relegatio-auth:1.0.0
+          image: ghcr.io/kishieel/relegatio-auth:1.0.2
           imagePullPolicy: IfNotPresent
           env:
+            - name: ACCESS_TOKEN_EXPIRES_IN
+              value: "30d"
             - name: DATABASE_URL
               value: "mysql://root:root@mysql:3306/auth"
             - name: HOST
@@ -2467,6 +2815,8 @@ spec:
               value: "http://admin:admin@rabbit:15672"
             - name: RABBIT_RMQ_URL
               value: "amqp://admin:admin@rabbit:5672"
+            - name: REFRESH_TOKEN_EXPIRES_IN
+              value: "30d"
           command:
             - /bin/prisma.sh
           volumeMounts:

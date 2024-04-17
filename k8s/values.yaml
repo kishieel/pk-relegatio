@@ -1,8 +1,10 @@
 x-templates:
-  ts-microservice-config: &ts-microservice-config
+  nestjs-microservice-config: &nestjs-microservice-config
     port: 3000
-    probe: graphql
-  ts-microservice-env: &ts-microservice-env
+    probe:
+      path: /graphql?query=%7B__typename%7D
+      port: 3000
+  nestjs-microservice-env: &nest-microservice-env
     HOST: 0.0.0.0
     PORT: "3000"
     RABBIT_RMQ_URL: amqp://admin:admin@rabbit:5672
@@ -10,29 +12,34 @@ x-templates:
 
 microservices:
   auth:
-    <<: *ts-microservice-config
-    image: ghcr.io/kishieel/relegatio-auth:1.0.0
+    <<: *nestjs-microservice-config
+    image: ghcr.io/kishieel/relegatio-auth:1.0.2
     development:
       enabled: true
       source: /volumes/microservices/auth
-    setup:
-      prisma.sh: |
-        #!/usr/bin/env bash
-        yarn prisma migrate deploy
-        yarn prisma generate
+    hooks:
+      prisma.sh:
+        type: post-install,post-upgrade
+        weight: 5
+        source: |
+          #!/usr/bin/env sh
+          yarn prisma migrate deploy
+          yarn prisma generate
     env:
-      <<: *ts-microservice-env
+      <<: *nest-microservice-env
       DATABASE_URL: mysql://root:root@mysql:3306/auth
       JWT_SECRET: secret
+      ACCESS_TOKEN_EXPIRES_IN: 30d
+      REFRESH_TOKEN_EXPIRES_IN: 30d
 
   gateway:
-    <<: *ts-microservice-config
-    image: ghcr.io/kishieel/relegatio-gateway:1.0.2
+    <<: *nestjs-microservice-config
+    image: ghcr.io/kishieel/relegatio-gateway:1.0.3
     development:
       enabled: true
       source: /volumes/microservices/gateway
     env:
-      <<: *ts-microservice-env
+      <<: *nest-microservice-env
       POSTS_GRAPHQL_URL: http://posts:3000/graphql
       AUTH_GRAPHQL_URL: http://auth:3000/graphql
     ingresses:
@@ -45,26 +52,50 @@ microservices:
           nginx.ingress.kubernetes.io/rewrite-target: /graphql
 
   notifications:
-    <<: *ts-microservice-config
-    image: ghcr.io/kishieel/relegatio-notifications:1.0.1
+    <<: *nestjs-microservice-config
+    image: ghcr.io/kishieel/relegatio-notifications:1.0.2
     development:
       enabled: true
       source: /volumes/microservices/notifications
-    probe: rest
+    probe:
+      path: /health
+      port: 3000
     env:
-      <<: *ts-microservice-env
+      <<: *nest-microservice-env
       DATABASE_URL:
         value: notifications
 
   posts:
-    <<: *ts-microservice-config
-    image: ghcr.io/kishieel/relegatio-posts:1.0.2
+    <<: *nestjs-microservice-config
+    image: ghcr.io/kishieel/relegatio-posts:1.0.3
     development:
       enabled: true
       source: /volumes/microservices/posts
     env:
-      <<: *ts-microservice-env
+      <<: *nest-microservice-env
       DATABASE_URL: http://admin:admin@couchdb-svc-couchdb:5984
+
+  frontend:
+    image: ghcr.io/kishieel/relegatio-frontend:1.0.1
+    port: 3000
+    development:
+      enabled: true
+      source: /volumes/microservices/frontend
+    probe:
+      path: /
+      port: 3000
+    env:
+      REACT_APP_GRAPHQL_URL: http://api.relegatio.localhost/graphql
+      HOST: 0.0.0.0
+      PORT: "3000"
+    ingresses:
+      frontend:
+        enabled: true
+        name: frontend
+        hostname: relegatio.localhost
+        path: /
+        annotations:
+          nginx.ingress.kubernetes.io/rewrite-target: /
 
 mysql:
   fullnameOverride: mysql
@@ -102,7 +133,8 @@ couchdb:
   fullnameOverride: couchdb
   adminUsername: admin
   adminPassword: admin
-  clusterSize: 2
+  cookieAuthSecret: cookie-auth-secret
+  clusterSize: 3
   enableSearch: true
   persistentVolume:
     enabled: true
@@ -122,6 +154,10 @@ couchdb:
     hosts:
       - couchdb.relegatio.localhost
     className: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/affinity: "cookie"
+      nginx.ingress.kubernetes.io/session-cookie-name: "couchdb-session"
+      nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"
 
 mailpit:
   fullnameOverride: mailpit

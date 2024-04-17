@@ -46,6 +46,8 @@ helm install k8s k8s-x.y.z.tgz
 
 helm install relegatio-chart k8s
 helm upgrade relegatio-chart k8s
+
+kubectl run -it load-generator --rm --image=busybox:1.28 --restart=Never -- /bin/sh -c "while sleep 0.01; do wget -q -O- http://gateway; done"
 ```
 
 ##### References:
@@ -133,3 +135,53 @@ helm upgrade relegatio-chart k8s
     Instead `kind` itself create container where the cluster lives. So in this sense the host for cluster is not the same as the host for the local machine. 
     The host for cluster is the container created by `kind`. 
     So the volume from local machine have to be mounted to the `kind` container first.
+
+6. CouchDB Fauxton UI is randomly not accessible. After successful login the unauthorized error is thrown.
+
+    This was caused because Fauxton UI is using cookies for authentication. When Kubernetes
+    load balanced the requests, the cookies were not shared between the pods. Sticky sessions
+    for the Ingress controller were enabled to solve this issue.
+
+    ```yaml
+      annotations:
+        nginx.ingress.kubernetes.io/affinity: "cookie"
+        nginx.ingress.kubernetes.io/session-cookie-name: "couchdb-session"
+        nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"
+    ```
+7. Size of the Docker images is too big and it is slowing down the deployment and development process.
+
+    The size of the Docker images can be reduced by using multi-stage builds and removing unnecessary 
+    files from the final image. Also, the base image can be changed to a smaller one, e.g. Alpine Linux.
+
+    Before optimization:
+    ```shell
+    ghcr.io/kishieel/relegatio-auth            1.0.0-dev                  c3eeb68cefc7   3 weeks ago      1.59GB
+    ghcr.io/kishieel/relegatio-notifications   1.0.1-dev                  d436175d743d   7 days ago       1.72GB
+    ghcr.io/kishieel/relegatio-posts           1.0.2-dev                  b723c6120b1d   2 weeks ago      1.66GB
+    ghcr.io/kishieel/relegatio-gateway         1.0.2-dev                  1ae518a100f4   3 weeks ago      1.68GB
+    ghcr.io/kishieel/relegatio-frontend        1.0.0-dev                  cb902d87b532   6 hours ago      3.26GB
+    ```
+   
+    After optimization:
+    ```shell
+    ghcr.io/kishieel/relegatio-notifications   1.0.2-dev                  07c9d95a516b   2 minutes ago    605MB
+    ghcr.io/kishieel/relegatio-auth            1.0.2-dev                  56b138923d54   6 minutes ago    790MB
+    ghcr.io/kishieel/relegatio-posts           1.0.3-dev                  df3c9e520949   4 seconds ago    578MB
+    ghcr.io/kishieel/relegatio-gateway         1.0.3-dev                  486fc86521cf   24 minutes ago   544MB
+    ghcr.io/kishieel/relegatio-frontend        1.0.1-dev                  496658b482de   56 seconds ago   2.3GB
+    ```
+
+    The size of some images are still big, but these are the development images. The production images are smaller.
+
+8. The cluster creation is ending with an error. [todo]
+
+    ```shell
+    Error: INSTALLATION FAILED: failed post-install: 1 error occurred:
+        * job failed: BackoffLimitExceeded
+
+
+    Helm chart installation failed
+    ```
+   
+    The only post-install job is the one need for CouchDB cluster setup. The solution was to add `--wait` flag 
+    to the `helm install` command.

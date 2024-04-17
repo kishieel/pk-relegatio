@@ -739,10 +739,10 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@kishieel/nestjs-distributed-shared@0.0.8":
-  version "0.0.8"
-  resolved "https://npm.pkg.github.com/download/@kishieel/nestjs-distributed-shared/0.0.8/6fa2d158a199d5e2eb9304d348322174370eb8c0#6fa2d158a199d5e2eb9304d348322174370eb8c0"
-  integrity sha512-VFyq5ppyfyAF2HwE5EHu1kfukAU/nKfozsx9FJGtxiUxXOXLoJKBDFU8kTRRZDjnwc8OyMq3TSDZZMpZjfkT5Q==
+"@kishieel/relegatio-common@1.0.1":
+  version "1.0.1"
+  resolved "https://npm.pkg.github.com/download/@kishieel/relegatio-common/1.0.1/4e117ec106d62c9d6a44268a079253057097a6ab#4e117ec106d62c9d6a44268a079253057097a6ab"
+  integrity sha512-+C0bzGevdc/4bgLMSbm1armO7cjhXU4pvT5L+6bS3CMpna7YEBy4jj93T7VYg5il1mr1BygBkrUi47JrU3AjuQ==
   dependencies:
     "@nestjs/common" "^10.0.0"
     "@nestjs/core" "^10.0.0"
@@ -751,12 +751,12 @@
     reflect-metadata "^0.1.13"
     rxjs "^7.8.1"
 
-"@kishieel/relegatio-messaging@1.0.2":
-  version "1.0.2"
-  resolved "https://npm.pkg.github.com/download/@kishieel/relegatio-messaging/1.0.2/fe7882aa9ec1f7105acc6346b44ad72fd3bde3ce#fe7882aa9ec1f7105acc6346b44ad72fd3bde3ce"
-  integrity sha512-PIk8HeI24VKRbZ9uxh3UZF+VBaqVeW5FtGBjwLTZMtZUdfjMgvu25r+912n+thPcc1IymEvqKZxjIgztw8cG2A==
+"@kishieel/relegatio-messaging@1.0.5":
+  version "1.0.5"
+  resolved "https://npm.pkg.github.com/download/@kishieel/relegatio-messaging/1.0.5/99eb953c0176bf8c5b8bb2aa7f9d500c166933d6#99eb953c0176bf8c5b8bb2aa7f9d500c166933d6"
+  integrity sha512-xe/l1xU7r0+d2TgzXqhfBD6hnF0wXKQkPeJBc9uF2tc/UEKrTYHR/HmxdNUD6hMujy8tdxIKUHxo9DC6p7cNag==
   dependencies:
-    "@kishieel/nestjs-distributed-shared" "0.0.8"
+    "@kishieel/relegatio-common" "1.0.1"
     "@nestjs/axios" "3.0.0"
     "@nestjs/common" "^10.0.0"
     "@nestjs/core" "^10.0.0"

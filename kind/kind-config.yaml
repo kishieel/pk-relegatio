@@ -16,5 +16,5 @@ nodes:
     hostPort: 443
     protocol: TCP
   extraMounts:
-  - hostPath: /home/tomek/Repozytoria/pk-systemy-gridowe-relegatio
+  - hostPath: .
     containerPath: /volumes

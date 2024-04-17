@@ -22,6 +22,7 @@ spec:
         runAsGroup: {{ $.Values.localGid }}
         fsGroup: {{ $.Values.localGid }}
       {{- end }}
+      {{/* initContainers: only for gateway to wait for another service */}}
       containers:
         - name: {{ $serviceName }}
           image: {{ $serviceConfig.image }}
@@ -33,35 +34,40 @@ spec:
             - name: {{ $envName }}
               value: "{{ $envValue }}"
           {{- end }}
+          resources:
+            limits:
+              cpu: 2000m {{/* @todo: adjust these values for production and development */}}
+              memory: 2Gi
+            requests:
+              cpu: 1000m
+              memory: 1Gi
           {{- if ($serviceConfig.development).enabled }}
           volumeMounts:
             - mountPath: /app
               name: {{ $serviceName }}-code
           {{- end }}
+          {{- if $serviceConfig.probe }}
           livenessProbe:
             httpGet:
-              path: {{ if eq $serviceConfig.probe "graphql" }} /graphql?query=%7B__typename%7D {{ else }} /health {{ end }}
-              port: {{ default 3000 $serviceConfig.port }}
-              {{ if eq $serviceConfig.probe "graphql" }}
+              path: {{ default "/" $serviceConfig.probe.path  }}
+              port: {{ default 3000 $serviceConfig.probe.port }}
               httpHeaders:
                 - name: apollo-require-preflight
                   value: "true"
-              {{ end }}
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
           readinessProbe:
             httpGet:
-              path: {{ if eq $serviceConfig.probe "graphql" }} /graphql?query=%7B__typename%7D {{ else }} /health {{ end }}
-              port: {{ default 3000 $serviceConfig.port }}
-              {{ if eq $serviceConfig.probe "graphql" }}
+              path: {{ default "/" $serviceConfig.probe.path  }}
+              port: {{ default 3000 $serviceConfig.probe.port }}
               httpHeaders:
                 - name: apollo-require-preflight
                   value: "true"
-              {{ end }}
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
+          {{- end }}
       {{- if ($serviceConfig.development).enabled }}
       volumes:
         - name: {{ $serviceName }}-code
@@ -80,6 +86,44 @@ spec:
   ports:
     - port: 3000
       targetPort: 3000
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ $serviceName }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ $serviceName }}
+  minReplicas: 1
+  maxReplicas: 2
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 300
+    scaleUp:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 300
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
 ---
 {{- range $ingressName, $ingressConfig := $serviceConfig.ingresses }}
 {{- if $ingressConfig.enabled }}
@@ -105,28 +149,28 @@ spec:
 ---
 {{- end }}
 {{- end }}
-{{- if $serviceConfig.setup }}
-{{- range $setupName, $setupConfig := $serviceConfig.setup }}
+{{- if $serviceConfig.hooks }}
+{{- range $hookName, $hookConfig := $serviceConfig.hooks }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ $serviceName }}-{{ $setupName | replace "." "-" }}-configmap
+  name: {{ $serviceName }}-{{ $hookName | replace "." "-" }}-configmap
 data:
-  {{ $setupName }}:
-    {{- toYaml $setupConfig | indent 2 }}
+  {{ $hookName }}:
+    {{- toYaml $hookConfig.source | indent 2 }}
 ---
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ $serviceName }}-{{ $setupName | replace "." "-" }}
+  name: {{ $serviceName }}-{{ $hookName | replace "." "-" }}
   annotations:
-    "helm.sh/hook": post-upgrade
-    "helm.sh/hook-weight": "5"
+    "helm.sh/hook": {{ $hookConfig.type }}
+    "helm.sh/hook-weight": {{ $hookConfig.weight | quote }}
     "helm.sh/hook-delete-policy": hook-succeeded
 spec:
   template:
     metadata:
-      name: {{ $serviceName }}-{{ $setupName | replace "." "-" }}
+      name: {{ $serviceName }}-{{ $hookName | replace "." "-" }}
     spec:
       restartPolicy: Never
       imagePullSecrets:
@@ -138,7 +182,7 @@ spec:
         fsGroup: {{ $.Values.localGid }}
       {{- end }}
       containers:
-        - name: {{ $serviceName }}-{{ $setupName | replace "." "-" }}
+        - name: {{ $serviceName }}-{{ $hookName | replace "." "-" }}
           image: {{ $serviceConfig.image }}
           imagePullPolicy: IfNotPresent
           env:
@@ -147,15 +191,15 @@ spec:
               value: "{{ $envValue }}"
           {{- end }}
           command:
-            - /bin/{{ $setupName }}
+            - /bin/{{ $hookName }}
           volumeMounts:
             {{- if ($serviceConfig.development).enabled }}
             - mountPath: /app
               name: {{ $serviceName }}-code
             {{- end }}
-            - name: {{ $serviceName }}-{{ $setupName | replace "." "-" }}-configmap
-              mountPath: /bin/{{ $setupName }}
-              subPath: {{ $setupName }}
+            - name: {{ $serviceName }}-{{ $hookName | replace "." "-" }}-configmap
+              mountPath: /bin/{{ $hookName }}
+              subPath: {{ $hookName }}
               readOnly: true
       volumes:
         {{- if ($serviceConfig.development).enabled }}
@@ -164,9 +208,9 @@ spec:
             path: {{ ($serviceConfig.development).source }}
             type: Directory
         {{- end }}
-        - name: {{ $serviceName }}-{{ $setupName | replace "." "-" }}-configmap
+        - name: {{ $serviceName }}-{{ $hookName | replace "." "-" }}-configmap
           configMap:
-            name: {{ $serviceName }}-{{ $setupName | replace "." "-" }}-configmap
+            name: {{ $serviceName }}-{{ $hookName | replace "." "-" }}-configmap
             defaultMode: 0777 # @todo: somehow I don't like this, check if I can set owner of this file to container user
   backoffLimit: 1
   ttlSecondsAfterFinished: 30

@@ -1,17 +1,11 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { CouchdbService } from '@app/couchdb/couchdb.factory';
+import { Injectable } from '@nestjs/common';
 import { EventContent, EventType } from '@kishieel/relegatio-messaging';
 import { AuthorDocument } from '@app/couchdb/documents/author.document';
-
+import { CouchdbService } from '@app/couchdb/couchdb.service';
 
 @Injectable()
 export class UsersService {
-    constructor(
-        @Inject(CouchdbService)
-        private readonly couchdbService: CouchdbService,
-    ) {
-    }
-
+    constructor(private readonly couchdbService: CouchdbService) {}
 
     async create(payload: EventContent<EventType.UserRegistered>): Promise<void> {
         await this.couchdbService.use<AuthorDocument>('authors').insert({

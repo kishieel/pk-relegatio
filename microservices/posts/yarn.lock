@@ -1010,8 +1010,10 @@
     reflect-metadata "^0.1.13"
     rxjs "^7.8.1"
 
-"@kishieel/relegatio-common@file:.yalc/@kishieel/relegatio-common":
-  version "1.0.6"
+"@kishieel/relegatio-common@1.0.7":
+  version "1.0.7"
+  resolved "https://npm.pkg.github.com/download/@kishieel/relegatio-common/1.0.7/507dffe7b73ffccde65143815d433f6d9b79bb8d#507dffe7b73ffccde65143815d433f6d9b79bb8d"
+  integrity sha512-66bQJP+3YkXkPbolHcCQtpj1FwpdP8Dnf9nqfaW9+D236ZnENhrQSKq6ZttfFnZRbH2R5f8fB+khGo9X114nuA==
   dependencies:
     "@nestjs/common" "^10.0.0"
     "@nestjs/core" "^10.0.0"
@@ -1021,8 +1023,10 @@
     reflect-metadata "^0.1.13"
     rxjs "^7.8.1"
 
-"@kishieel/relegatio-messaging@file:.yalc/@kishieel/relegatio-messaging":
-  version "1.0.4"
+"@kishieel/relegatio-messaging@1.0.5":
+  version "1.0.5"
+  resolved "https://npm.pkg.github.com/download/@kishieel/relegatio-messaging/1.0.5/99eb953c0176bf8c5b8bb2aa7f9d500c166933d6#99eb953c0176bf8c5b8bb2aa7f9d500c166933d6"
+  integrity sha512-xe/l1xU7r0+d2TgzXqhfBD6hnF0wXKQkPeJBc9uF2tc/UEKrTYHR/HmxdNUD6hMujy8tdxIKUHxo9DC6p7cNag==
   dependencies:
     "@kishieel/relegatio-common" "1.0.1"
     "@nestjs/axios" "3.0.0"

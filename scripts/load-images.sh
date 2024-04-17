@@ -12,6 +12,7 @@ AUTH_IMAGE=$(helm show values k8s | yq -r .microservices.auth.image)
 GATEWAY_IMAGE=$(helm show values k8s | yq -r .microservices.gateway.image)
 NOTIFICATIONS_IMAGE=$(helm show values k8s | yq -r .microservices.notifications.image)
 POSTS_IMAGE=$(helm show values k8s | yq -r .microservices.posts.image)
+FRONTEND_IMAGE=$(helm show values k8s | yq -r .microservices.frontend.image)
 MYSQL_IMAGE=$(helm show values bitnami/mysql | yq -r '.image.registry + "/" + .image.repository + ":" + .image.tag')
 REDIS_IMAGE=$(helm show values bitnami/redis | yq -r '.image.registry + "/" + .image.repository + ":" + .image.tag')
 RABBIT_IMAGE=$(helm show values bitnami/rabbitmq | yq -r '.image.registry + "/" + .image.repository + ":" + .image.tag')
@@ -22,29 +23,31 @@ COUCHDB_INIT_IMAGE=$(helm show values couchdb/couchdb | yq -r '.initImage.reposi
 COUCHDB_SEARCH_IMAGE=$(helm show values couchdb/couchdb | yq -r '.searchImage.repository + ":" + .searchImage.tag')
 
 # Pull the images to the local Docker daemon
-docker pull "$AUTH_IMAGE" || fail "Failed to pull the Auth image"
-docker pull "$GATEWAY_IMAGE" || fail "Failed to pull the Gateway image"
-docker pull "$NOTIFICATIONS_IMAGE" || fail "Failed to pull the Notifications image"
-docker pull "$POSTS_IMAGE" || fail "Failed to pull the Posts image"
-docker pull "$MYSQL_IMAGE" || fail "Failed to pull the MySQL image"
-docker pull "$REDIS_IMAGE" || fail "Failed to pull the Redis image"
-docker pull "$RABBIT_IMAGE" || fail "Failed to pull the RabbitMQ image"
-docker pull "$MAILPIT_IMAGE" || fail "Failed to pull the Mailpit image"
-docker pull "$COUCHDB_IMAGE" || fail "Failed to pull the CouchDB image"
-docker pull "$COUCHDB_CURL_IMAGE" || fail "Failed to pull the CouchDB Curl image"
-docker pull "$COUCHDB_INIT_IMAGE" || fail "Failed to pull the CouchDB Init image"
-docker pull "$COUCHDB_SEARCH_IMAGE" || fail "Failed to pull the CouchDB Search image"
+docker pull "$AUTH_IMAGE" || fail "Failed to pull the $AUTH_IMAGE"
+docker pull "$GATEWAY_IMAGE" || fail "Failed to pull the $GATEWAY_IMAGE"
+docker pull "$NOTIFICATIONS_IMAGE" || fail "Failed to pull the $NOTIFICATIONS_IMAGE"
+docker pull "$POSTS_IMAGE" || fail "Failed to pull the $POSTS_IMAGE"
+docker pull "$FRONTEND_IMAGE" || fail "Failed to pull the $FRONTEND_IMAGE"
+docker pull "$MYSQL_IMAGE" || fail "Failed to pull the $MYSQL_IMAGE"
+docker pull "$REDIS_IMAGE" || fail "Failed to pull the $REDIS_IMAGE"
+docker pull "$RABBIT_IMAGE" || fail "Failed to pull the $RABBIT_IMAGE"
+docker pull "$MAILPIT_IMAGE" || fail "Failed to pull the $MAILPIT_IMAGE"
+docker pull "$COUCHDB_IMAGE" || fail "Failed to pull the $COUCHDB_IMAGE"
+docker pull "$COUCHDB_CURL_IMAGE" || fail "Failed to pull the $COUCHDB_CURL_IMAGE"
+docker pull "$COUCHDB_INIT_IMAGE" || fail "Failed to pull the $COUCHDB_INIT_IMAGE"
+docker pull "$COUCHDB_SEARCH_IMAGE" || fail "Failed to pull the $COUCHDB_SEARCH_IMAGE"
 
 # Load the images into the kind cluster
-kind load docker-image --name relegatio-cluster-eu "$AUTH_IMAGE" || fail "Failed to load the Auth image"
-kind load docker-image --name relegatio-cluster-eu "$GATEWAY_IMAGE" || fail "Failed to load the Gateway image"
-kind load docker-image --name relegatio-cluster-eu "$NOTIFICATIONS_IMAGE" || fail "Failed to load the Notifications image"
-kind load docker-image --name relegatio-cluster-eu "$POSTS_IMAGE" || fail "Failed to load the Posts image"
-kind load docker-image --name relegatio-cluster-eu "$MYSQL_IMAGE" || fail "Failed to load the MySQL image"
-kind load docker-image --name relegatio-cluster-eu "$REDIS_IMAGE" || fail "Failed to load the Redis image"
-kind load docker-image --name relegatio-cluster-eu "$RABBIT_IMAGE" || fail "Failed to load the RabbitMQ image"
-kind load docker-image --name relegatio-cluster-eu "$MAILPIT_IMAGE" || fail "Failed to load the Mailpit image"
-kind load docker-image --name relegatio-cluster-eu "$COUCHDB_IMAGE" || fail "Failed to load the CouchDB image"
-kind load docker-image --name relegatio-cluster-eu "$COUCHDB_CURL_IMAGE" || fail "Failed to load the CouchDB Curl image"
-kind load docker-image --name relegatio-cluster-eu "$COUCHDB_INIT_IMAGE" || fail "Failed to load the CouchDB Init image"
-kind load docker-image --name relegatio-cluster-eu "$COUCHDB_SEARCH_IMAGE" || fail "Failed to load the CouchDB Search image"
+kind load docker-image --name relegatio-cluster-eu "$AUTH_IMAGE" || fail "Failed to load the $AUTH_IMAGE"
+kind load docker-image --name relegatio-cluster-eu "$GATEWAY_IMAGE" || fail "Failed to load the $GATEWAY_IMAGE"
+kind load docker-image --name relegatio-cluster-eu "$NOTIFICATIONS_IMAGE" || fail "Failed to load the $NOTIFICATIONS_IMAGE"
+kind load docker-image --name relegatio-cluster-eu "$POSTS_IMAGE" || fail "Failed to load the $POSTS_IMAGE"
+kind load docker-image --name relegatio-cluster-eu "$FRONTEND_IMAGE" || fail "Failed to load the $FRONTEND_IMAGE"
+kind load docker-image --name relegatio-cluster-eu "$MYSQL_IMAGE" || fail "Failed to load the $MYSQL_IMAGE"
+kind load docker-image --name relegatio-cluster-eu "$REDIS_IMAGE" || fail "Failed to load the $REDIS_IMAGE"
+kind load docker-image --name relegatio-cluster-eu "$RABBIT_IMAGE" || fail "Failed to load the $RABBIT_IMAGE"
+kind load docker-image --name relegatio-cluster-eu "$MAILPIT_IMAGE" || fail "Failed to load the $MAILPIT_IMAGE"
+kind load docker-image --name relegatio-cluster-eu "$COUCHDB_IMAGE" || fail "Failed to load the $COUCHDB_IMAGE"
+kind load docker-image --name relegatio-cluster-eu "$COUCHDB_CURL_IMAGE" || fail "Failed to load the $COUCHDB_CURL_IMAGE"
+kind load docker-image --name relegatio-cluster-eu "$COUCHDB_INIT_IMAGE" || fail "Failed to load the $COUCHDB_INIT_IMAGE"
+kind load docker-image --name relegatio-cluster-eu "$COUCHDB_SEARCH_IMAGE" || fail "Failed to load the $COUCHDB_SEARCH_IMAGE"

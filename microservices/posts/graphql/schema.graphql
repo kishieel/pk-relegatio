@@ -49,6 +49,7 @@ input PostUpdateInput {
 }
 
 type Query {
+  author(id: Cuid!): Author!
   authors: [Author!]!
   post(id: Cuid!): Post!
   posts: [Post!]!
