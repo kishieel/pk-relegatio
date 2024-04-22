@@ -1,0 +1,179 @@
+type Author {
+  id: Cuid!
+  firstName: String!
+  lastName: String!
+  createdAt: DateTimeISO!
+  updatedAt: DateTimeISO!
+  posts: [Post!]!
+}
+
+enum AuthorFilterBy {
+  ANY
+  FIRST_NAME
+  LAST_NAME
+}
+
+enum AuthorOrderBy {
+  CREATED_AT
+  UPDATED_AT
+  FIRST_NAME
+  LAST_NAME
+}
+
+input AuthorPaginationFilterByInput {
+  field: AuthorFilterBy!
+  value: String!
+  operator: PaginationFilterByOperator = EQ
+}
+
+input AuthorPaginationInput {
+  paging: AuthorPaginationPagingInput
+  orderBy: [AuthorPaginationOrderByInput!]
+  filterBy: [AuthorPaginationFilterByInput!]
+}
+
+input AuthorPaginationOrderByInput {
+  field: AuthorOrderBy!
+  direction: PaginationOrderByDirection!
+}
+
+input AuthorPaginationPagingInput {
+  offset: Int
+  limit: Int
+}
+
+type AuthToken {
+  accessToken: String!
+  refreshToken: String!
+}
+
+# A field whose value conforms to the standard cuid format as specified in https://github.com/ericelliott/cuid#broken-down
+scalar Cuid
+
+# A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.This scalar is serialized to a string in ISO 8601 format and parsed from a string in ISO 8601 format.
+scalar DateTimeISO
+
+type Mutation {
+  signUp(input: SignUpInput!): AuthToken!
+  signIn(input: SignInInput!): AuthToken!
+  refreshToken(input: RefreshTokenInput!): AuthToken!
+  postCreate(input: PostCreateInput!): Post!
+  postUpdate(id: Cuid!, input: PostUpdateInput!): Post!
+  postDelete(id: Cuid!): Boolean!
+}
+
+enum PaginationFilterByOperator {
+  EQ
+  NE
+  LT
+  LTE
+  GT
+  GTE
+  IN
+  NIN
+  LIKE
+  NLIKE
+}
+
+enum PaginationOrderByDirection {
+  ASC
+  DESC
+}
+
+type Post {
+  id: Cuid!
+  title: String!
+  slug: String!
+  content: String!
+  createdAt: DateTimeISO!
+  updatedAt: DateTimeISO!
+  author: Author!
+}
+
+input PostCreateInput {
+  title: String!
+  content: String!
+}
+
+enum PostFilterBy {
+  ANY
+  TITLE
+  SLUG
+}
+
+enum PostOrderBy {
+  CREATED_AT
+  UPDATED_AT
+  TITLE
+  SLUG
+}
+
+type PostPagination {
+  edges: [PostPaginationEdge!]!
+  info: PostPaginationMeta!
+}
+
+type PostPaginationEdge {
+  node: Post!
+  cursor: String!
+}
+
+input PostPaginationFilterByInput {
+  field: PostFilterBy!
+  value: String!
+  operator: PaginationFilterByOperator = EQ
+}
+
+input PostPaginationInput {
+  paging: PostPaginationPagingInput
+  orderBy: [PostPaginationOrderByInput!]
+  filterBy: [PostPaginationFilterByInput!]
+}
+
+type PostPaginationMeta {
+  firstCursor: String
+  lastCursor: String
+  hasNextPage: Boolean!
+  hasPrevPage: Boolean!
+  total: Float!
+  count: Float!
+}
+
+input PostPaginationOrderByInput {
+  field: PostOrderBy!
+  direction: PaginationOrderByDirection!
+}
+
+input PostPaginationPagingInput {
+  offset: Int
+  limit: Int
+}
+
+input PostUpdateInput {
+  title: String
+  content: String
+}
+
+type Query {
+  authors(input: AuthorPaginationInput!): [Author!]!
+  author(id: Cuid!): Author!
+  posts(input: PostPaginationInput!): PostPagination!
+  post(id: Cuid!): Post!
+  postBySlug(slug: String!): Post!
+}
+
+input RefreshTokenInput {
+  token: String!
+}
+
+input SignInInput {
+  username: String!
+  password: String!
+}
+
+input SignUpInput {
+  username: String!
+  password: String!
+  firstName: String!
+  lastName: String!
+}

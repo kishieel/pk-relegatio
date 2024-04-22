@@ -1,6 +1,7 @@
 export * from './consts/permission.enum';
 export * from './consts/role.enum';
 export * from './decorators/graphql-ctx.decorator';
+export * from './graphql/create-exception.function';
 export * from './graphql/create-subgraph-context.function';
 export * from './guards/auth.guard';
 export * from './guards/permission.guards';

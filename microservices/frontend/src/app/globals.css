@@ -31,3 +31,59 @@ body {
     text-wrap: balance;
   }
 }
+
+.markdown h1 {
+  @apply text-4xl font-bold mb-4;
+}
+
+.markdown h2 {
+  @apply text-3xl font-bold mb-3;
+}
+
+.markdown h3 {
+  @apply text-2xl font-bold mb-2;
+}
+
+.markdown h4 {
+  @apply text-xl font-bold mb-2;
+}
+
+.markdown h5 {
+  @apply text-lg font-bold mb-2;
+}
+
+.markdown h6 {
+  @apply text-base font-bold mb-2;
+}
+
+.markdown p {
+  @apply mb-4;
+}
+
+.markdown ul {
+  @apply list-disc pl-6 mb-4;
+}
+
+.markdown ol {
+  @apply list-decimal pl-6 mb-4;
+}
+
+.markdown pre {
+  @apply bg-gray-900 rounded p-4 mb-4;
+}
+
+.markdown code {
+  @apply text-sm font-mono;
+}
+
+.markdown blockquote {
+  @apply border-l-4 border-gray-900 pl-4 italic mb-4;
+}
+
+.markdown a {
+  @apply text-blue-500 underline;
+}
+
+.markdown img {
+  @apply mx-auto my-4;
+}

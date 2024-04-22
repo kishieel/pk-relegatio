@@ -1,10 +1,13 @@
 import { Module } from '@nestjs/common';
-import { GraphQLModule } from '@nestjs/graphql';
+import { GraphQLModule, registerEnumType } from '@nestjs/graphql';
 import { ApolloFederationDriver, ApolloFederationDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
-import { GraphQLCuid, GraphQLDateTimeISO, GraphQLUUID } from 'graphql-scalars';
+import { GraphQLCuid, GraphQLDateTimeISO } from 'graphql-scalars';
 import { ApolloServerPluginInlineTrace } from '@apollo/server/plugin/inlineTrace';
 import { createSubgraphContext } from '@kishieel/relegatio-common';
+import { PostFilterBy, PostOrderBy } from '@app/posts/gql/post-pagination.input';
+import { AuthorFilterBy, AuthorOrderBy } from '@app/authors/gql/author-pagination.input';
+import { PaginationFilterByOperator, PaginationOrderByDirection } from '@app/utils/pagination/graphql-pagination.enums';
 
 @Module({
     imports: [
@@ -31,4 +34,12 @@ import { createSubgraphContext } from '@kishieel/relegatio-common';
     ],
 })
 export class GraphqlModule {
+    constructor() {
+        registerEnumType(PaginationFilterByOperator, { name: 'PaginationFilterByOperator' });
+        registerEnumType(PaginationOrderByDirection, { name: 'PaginationOrderByDirection' });
+        registerEnumType(PostOrderBy, { name: 'PostOrderBy' });
+        registerEnumType(PostFilterBy, { name: 'PostFilterBy' });
+        registerEnumType(AuthorOrderBy, { name: 'AuthorOrderBy' });
+        registerEnumType(AuthorFilterBy, { name: 'AuthorFilterBy' });
+    }
 }

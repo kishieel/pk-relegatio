@@ -6,19 +6,26 @@ import { PostUpdateInput } from '@app/posts/gql/post-update.input';
 import { AuthGuard, GqlContext, GraphqlCtx } from '@kishieel/relegatio-common';
 import { UseGuards } from '@nestjs/common';
 import { GraphQLCuid } from 'graphql-scalars';
+import { PostPaginationInput } from '@app/posts/gql/post-pagination.input';
+import { PostPagination } from '@app/posts/gql/post-pagination.object';
 
 @Resolver(() => Post)
 export class PostsResolver {
     constructor(private readonly postsService: PostsService) {}
 
-    @Query(() => [Post])
-    async posts(): Promise<Post[]> {
-        return this.postsService.getPaginated();
+    @Query(() => PostPagination)
+    async posts(@Args('input') input: PostPaginationInput): Promise<PostPagination> {
+        return this.postsService.getPaginated(input);
     }
 
     @Query(() => Post)
     async post(@Args('id', { type: () => GraphQLCuid }) id: string): Promise<Post> {
         return this.postsService.getById(id);
+    }
+
+    @Query(() => Post)
+    async postBySlug(@Args('slug') slug: string): Promise<Post> {
+        return this.postsService.getBySlug(slug);
     }
 
     @UseGuards(AuthGuard)

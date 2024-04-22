@@ -1010,16 +1010,17 @@
     reflect-metadata "^0.1.13"
     rxjs "^7.8.1"
 
-"@kishieel/relegatio-common@1.0.7":
-  version "1.0.7"
-  resolved "https://npm.pkg.github.com/download/@kishieel/relegatio-common/1.0.7/507dffe7b73ffccde65143815d433f6d9b79bb8d#507dffe7b73ffccde65143815d433f6d9b79bb8d"
-  integrity sha512-66bQJP+3YkXkPbolHcCQtpj1FwpdP8Dnf9nqfaW9+D236ZnENhrQSKq6ZttfFnZRbH2R5f8fB+khGo9X114nuA==
+"@kishieel/relegatio-common@1.0.8":
+  version "1.0.8"
+  resolved "https://npm.pkg.github.com/download/@kishieel/relegatio-common/1.0.8/ea90a520cf2887c8782935cc4624a2d931ac2eaf#ea90a520cf2887c8782935cc4624a2d931ac2eaf"
+  integrity sha512-kgz91XuFV3EEpJSZO862qIJBK/Vh+rzBBvVKLF7R7egWvdqE46ynXWD8pq6rSxwNeWbi+TntIypIyvezs8n43Q==
   dependencies:
     "@nestjs/common" "^10.0.0"
     "@nestjs/core" "^10.0.0"
     "@nestjs/graphql" "12.1.1"
     "@nestjs/jwt" "10.1.1"
     "@nestjs/platform-express" "^10.0.0"
+    graphql "16.8.1"
     reflect-metadata "^0.1.13"
     rxjs "^7.8.1"
 

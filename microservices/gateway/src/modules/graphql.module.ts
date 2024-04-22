@@ -5,7 +5,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GatewayConfig, GatewayConfigToken } from '@app/configs/gateway.config';
 import { AuthenticatedDataSource } from '@app/data-source/authenticated-data-source';
 import { Eventbus, MessagingService } from '@kishieel/relegatio-messaging';
-import type { GraphQLFormattedError } from 'graphql/index';
 import { formatError } from '@app/utils/format-error.function';
 
 @Module({

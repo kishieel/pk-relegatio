@@ -11,6 +11,41 @@ type Author {
   updatedAt: DateTimeISO!
 }
 
+enum AuthorFilterBy {
+  ANY
+  FIRST_NAME
+  LAST_NAME
+}
+
+enum AuthorOrderBy {
+  CREATED_AT
+  FIRST_NAME
+  LAST_NAME
+  UPDATED_AT
+}
+
+input AuthorPaginationFilterByInput {
+  field: AuthorFilterBy!
+  operator: PaginationFilterByOperator = EQ
+  value: String!
+}
+
+input AuthorPaginationInput {
+  filterBy: [AuthorPaginationFilterByInput!]
+  orderBy: [AuthorPaginationOrderByInput!]
+  paging: AuthorPaginationPagingInput
+}
+
+input AuthorPaginationOrderByInput {
+  direction: PaginationOrderByDirection!
+  field: AuthorOrderBy!
+}
+
+input AuthorPaginationPagingInput {
+  limit: Int
+  offset: Int
+}
+
 """
 A field whose value conforms to the standard cuid format as specified in https://github.com/ericelliott/cuid#broken-down
 """
@@ -25,6 +60,24 @@ type Mutation {
   postCreate(input: PostCreateInput!): Post!
   postDelete(id: Cuid!): Boolean!
   postUpdate(id: Cuid!, input: PostUpdateInput!): Post!
+}
+
+enum PaginationFilterByOperator {
+  EQ
+  GT
+  GTE
+  IN
+  LIKE
+  LT
+  LTE
+  NE
+  NIN
+  NLIKE
+}
+
+enum PaginationOrderByDirection {
+  ASC
+  DESC
 }
 
 type Post {
@@ -43,6 +96,60 @@ input PostCreateInput {
   title: String!
 }
 
+enum PostFilterBy {
+  ANY
+  SLUG
+  TITLE
+}
+
+enum PostOrderBy {
+  CREATED_AT
+  SLUG
+  TITLE
+  UPDATED_AT
+}
+
+type PostPagination {
+  edges: [PostPaginationEdge!]!
+  info: PostPaginationMeta!
+}
+
+type PostPaginationEdge {
+  cursor: String!
+  node: Post!
+}
+
+input PostPaginationFilterByInput {
+  field: PostFilterBy!
+  operator: PaginationFilterByOperator = EQ
+  value: String!
+}
+
+input PostPaginationInput {
+  filterBy: [PostPaginationFilterByInput!]
+  orderBy: [PostPaginationOrderByInput!]
+  paging: PostPaginationPagingInput
+}
+
+type PostPaginationMeta {
+  count: Float!
+  firstCursor: String
+  hasNextPage: Boolean!
+  hasPrevPage: Boolean!
+  lastCursor: String
+  total: Float!
+}
+
+input PostPaginationOrderByInput {
+  direction: PaginationOrderByDirection!
+  field: PostOrderBy!
+}
+
+input PostPaginationPagingInput {
+  limit: Int
+  offset: Int
+}
+
 input PostUpdateInput {
   content: String
   title: String
@@ -50,7 +157,8 @@ input PostUpdateInput {
 
 type Query {
   author(id: Cuid!): Author!
-  authors: [Author!]!
+  authors(input: AuthorPaginationInput!): [Author!]!
   post(id: Cuid!): Post!
-  posts: [Post!]!
+  postBySlug(slug: String!): Post!
+  posts(input: PostPaginationInput!): PostPagination!
 }

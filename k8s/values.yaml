@@ -85,7 +85,7 @@ microservices:
       path: /
       port: 3000
     env:
-      REACT_APP_GRAPHQL_URL: http://api.relegatio.localhost/graphql
+      GRAPHQL_URL: http://gateway:3000/graphql
       HOST: 0.0.0.0
       PORT: "3000"
     ingresses:
