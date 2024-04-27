@@ -1,5 +1,5 @@
 import { Field, InputType, Int } from '@nestjs/graphql';
-import { IsOptional } from 'class-validator';
+import { IsOptional, Max, Min, ValidateNested } from 'class-validator';
 import { PaginationFilterByOperator } from './graphql-pagination.enums';
 import {
     GraphqlFilters,
@@ -8,11 +8,9 @@ import {
     GraphqlSorts,
 } from '@app/utils/pagination/graphql-pagination.types';
 import { PaginationOrderByDirection } from '@app/utils/pagination/graphql-pagination.enums';
-import { GraphqlPaginator } from '@app/utils/pagination/graphql-paginator';
+import { Type } from 'class-transformer';
 
-export const GraphqlPaginationInput = <DATA, ORDER, FILTER, PAGING extends 'offset' | 'cursor'>(
-    args: GraphqlPaginationInputArgs<DATA, ORDER, FILTER, PAGING>,
-) => {
+export const GraphqlPaginationInput = <DATA, ORDER, FILTER>(args: GraphqlPaginationInputArgs<DATA, ORDER, FILTER>) => {
     @InputType(`${args.dataType.name}PaginationOrderByInput`)
     class PaginationOrderByInput {
         @Field(() => args.orderByType)
@@ -35,64 +33,37 @@ export const GraphqlPaginationInput = <DATA, ORDER, FILTER, PAGING extends 'offs
     }
 
     @InputType(`${args.dataType.name}PaginationPagingInput`)
-    class PaginationOffsetPagingInput {
+    class PaginationCursorPagingInput {
         @Field(() => Int, { nullable: true })
         @IsOptional()
+        @Min(0)
         offset?: number;
 
         @Field(() => Int, { nullable: true })
         @IsOptional()
+        @Min(1)
+        @Max(100)
         limit?: number;
     }
 
-    @InputType(`${args.dataType.name}PaginationPagingInput`)
-    class PaginationCursorPagingInput {
-        @Field(() => String, { nullable: true })
-        @IsOptional()
-        after?: string;
-
-        @Field(() => String, { nullable: true })
-        @IsOptional()
-        before?: string;
-
-        @Field(() => Int, { nullable: true })
-        @IsOptional()
-        first?: number;
-
-        @Field(() => Int, { nullable: true })
-        @IsOptional()
-        last?: number;
-    }
-
-    const PaginationPagingInput =
-        args.pagingType === 'offset'
-            ? PaginationOffsetPagingInput
-            : args.pagingType === 'cursor'
-              ? PaginationCursorPagingInput
-              : null;
-    type PaginationPagingInput = typeof args.pagingType extends 'offset'
-        ? PaginationOffsetPagingInput
-        : typeof args.pagingType extends 'cursor'
-          ? PaginationCursorPagingInput
-          : never;
-
     @InputType()
-    class PaginationInput
-        extends GraphqlPaginator
-        implements GraphqlPaging<PAGING>, GraphqlSorts<ORDER>, GraphqlFilters<FILTER>
-    {
-        @Field(() => PaginationPagingInput, {
-            nullable: true,
-        })
+    class PaginationInput implements GraphqlPaging, GraphqlSorts<ORDER>, GraphqlFilters<FILTER> {
+        @Field(() => PaginationCursorPagingInput, { nullable: true })
         @IsOptional()
-        paging?: PaginationPagingInput;
+        @ValidateNested()
+        @Type(() => PaginationCursorPagingInput)
+        paging?: PaginationCursorPagingInput;
 
         @Field(() => [PaginationOrderByInput], { nullable: true })
         @IsOptional()
+        @ValidateNested({ each: true })
+        @Type(() => PaginationOrderByInput)
         orderBy?: PaginationOrderByInput[];
 
         @Field(() => [PaginationFilterByInput], { nullable: true })
         @IsOptional()
+        @ValidateNested({ each: true })
+        @Type(() => PaginationFilterByInput)
         filterBy?: PaginationFilterByInput[];
     }
 

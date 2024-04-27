@@ -27,6 +27,9 @@ kubectl create secret docker-registry ghcr-secret --docker-server=ghcr.io --dock
 # Load the images into the Docker daemon and the kind cluster
 source scripts/load-images.sh
 
+# Generate self-signed certificates
+source scripts/generate-cert.sh
+
 # Install the Helm chart
 helm install \
   --set localUid="${LOCAL_UID}" \

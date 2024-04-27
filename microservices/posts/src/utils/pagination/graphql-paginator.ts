@@ -4,10 +4,14 @@ import { PaginationFilterByOperator, PaginationOrderByDirection } from '@app/uti
 import { Maybe } from '@apollo/federation';
 
 export class GraphqlPaginator {
-    static getPaging(input: GraphqlPaging<'offset'>): GraphqlPaging<'offset'>['paging'];
-    static getPaging(input: GraphqlPaging<'cursor'>): GraphqlPaging<'cursor'>['paging'];
-    static getPaging(input: GraphqlPaging<'offset' | 'cursor'>): Maybe<GraphqlPaging<'offset' | 'cursor'>['paging']> {
-        return input.paging;
+    static DEFAULT_OFFSET = 0;
+    static DEFAULT_LIMIT = 10;
+
+    static getPaging(input: GraphqlPaging): GraphqlPaging['paging'] {
+        return {
+            offset: input.paging?.offset ?? this.DEFAULT_OFFSET,
+            limit: input.paging?.limit ?? this.DEFAULT_LIMIT,
+        };
     }
 
     static getFilters(input: GraphqlFilters): Maybe<MangoSelector[]> {
@@ -69,5 +73,25 @@ export class GraphqlPaginator {
         return input.orderBy?.map((order) => ({
             [order.field]: order.direction === PaginationOrderByDirection.ASC ? 'asc' : 'desc',
         }));
+    }
+
+    static encodeCursor<T>(cursor: T): string {
+        return btoa(JSON.stringify(cursor));
+    }
+
+    static decodeCursor<T>(cursor: string): T {
+        return atob(JSON.parse(cursor)) as T;
+    }
+
+    static create<T, R>(data: T[], paging: GraphqlPaging['paging'], map: (item: T) => R) {
+        return {
+            data: data.slice(0, paging.limit).map(map),
+            pageInfo: {
+                offset: paging.offset,
+                limit: paging.limit,
+                hasNextPage: data.length > paging.limit,
+                hasPrevPage: paging.offset > 0,
+            },
+        };
     }
 }

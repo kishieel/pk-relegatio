@@ -699,6 +699,23 @@
     reflect-metadata "^0.1.13"
     rxjs "^7.8.1"
 
+"@kishieel/relegatio-messaging@1.0.6":
+  version "1.0.6"
+  resolved "https://npm.pkg.github.com/download/@kishieel/relegatio-messaging/1.0.6/3ef050e0865b607439005c941e72aed3fba5ac3c#3ef050e0865b607439005c941e72aed3fba5ac3c"
+  integrity sha512-f8SA+QyieiRCFPSefWndcvHuE+Lcvxvs7XNHLfxb2TNs/N3BZjLbLzxDknlHVHGapNXinOg1rgW3rbZNjSBBeQ==
+  dependencies:
+    "@kishieel/relegatio-common" "1.0.1"
+    "@nestjs/axios" "3.0.0"
+    "@nestjs/common" "^10.0.0"
+    "@nestjs/core" "^10.0.0"
+    "@nestjs/microservices" "10.2.7"
+    "@types/amqplib" "0.10.2"
+    amqplib "0.10.3"
+    axios "1.6.0"
+    reflect-metadata "^0.1.13"
+    rxjs "^7.8.1"
+    ts-patch "3.0.2"
+
 "@lukeed/csprng@^1.0.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@lukeed/csprng/-/csprng-1.1.0.tgz#1e3e4bd05c1cc7a0b2ddbd8a03f39f6e4b5e6cfe"

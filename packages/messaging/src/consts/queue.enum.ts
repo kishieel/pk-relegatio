@@ -1,6 +1,7 @@
 export enum Queue {
     Auth = 'auth.queue',
-    Posts = 'posts.queue',
+    Followers = 'followers.queue',
     Gateway = 'gateway.queue',
     Notifications = 'notifications.queue',
+    Posts = 'posts.queue',
 }

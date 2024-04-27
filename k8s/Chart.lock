@@ -8,11 +8,14 @@ dependencies:
 - name: rabbitmq
   repository: https://charts.bitnami.com/bitnami
   version: 13.0.0
+- name: keycloak
+  repository: https://charts.bitnami.com/bitnami
+  version: 21.0.3
 - name: couchdb
   repository: https://apache.github.io/couchdb-helm/
   version: 4.5.0
 - name: mailpit
   repository: https://jouve.github.io/charts/
   version: 0.15.0
-digest: sha256:4bea6bc06a884990387ddf4a217c3b9a0b4ed8687184fce7880cf9aed2ed25cd
-generated: "2024-03-28T20:44:01.276874787+01:00"
+digest: sha256:75a3d10806a1453232894899060c76e6327e35c064044f50fa0f9623e907877f
+generated: "2024-04-26T14:58:10.648139769+02:00"

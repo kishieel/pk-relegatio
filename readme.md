@@ -185,3 +185,46 @@ kubectl run -it load-generator --rm --image=busybox:1.28 --restart=Never -- /bin
    
     The only post-install job is the one need for CouchDB cluster setup. The solution was to add `--wait` flag 
     to the `helm install` command.
+
+9. Horizontal Pod Autoscaler (HPA) is scaling up too fast in development environment.
+
+    Because Node.js applications started in watch mode are consuming a lot of resources during startup, 
+    the HPA is scaling up the pods only because of the high CPU and memory usage during the startup.
+
+    In this case stabilization window nor cooldown period does not seem to help. To fix this issue 
+    I have removed the resources limit for the pods started in development mode.
+
+    ```gotemplate
+    resources:
+        {{- if not $serviceConfig.development.enabled }}
+        limits:
+            cpu: 200m
+            memory: 250Mi
+        {{- end }}
+        requests:
+            cpu: 100m
+            memory: 100Mi
+    ```
+
+10. Keycloak Config CLI is unable to start and failing with the error '0/1 nodes are available: 1 Insufficient cpu. preemption: 0/1 nodes are available: 1 No preemption victims found for incoming pod'.
+
+    This was caused because of original configuration of the Node.js applications. 
+    They requested too many resources so the Keycloak Config CLI was unable to start. The solution was to reduce the resources requested by the Node.js applications.
+
+    Before:
+
+    ```yaml
+    resources:
+        requests:
+            cpu: 1000m
+            memory: 1Gi
+    ```
+    
+    After:
+
+    ```yaml    
+    resources:
+        requests:
+            cpu: 100m
+            memory: 100Mi
+    ```

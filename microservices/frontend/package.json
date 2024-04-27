@@ -7,16 +7,18 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "compile": "graphql-codegen",
-    "watch": "graphql-codegen -w"
+    "format": "prettier --write \"src/**/*.ts\"",
+    "codegen:compile": "graphql-codegen",
+    "codegen:watch": "graphql-codegen -w"
   },
   "dependencies": {
     "@apollo/client": "3.9.11",
     "@apollo/experimental-nextjs-app-support": "0.10.0",
+    "cookies-next": "4.1.1",
     "date-fns": "3.6.0",
     "graphql": "16.8.1",
     "next": "14.2.1",
+    "next-themes": "0.3.0",
     "react": "^18",
     "react-dom": "^18",
     "react-markdown": "9.0.1"

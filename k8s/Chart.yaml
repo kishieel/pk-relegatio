@@ -14,6 +14,9 @@ dependencies:
   - name: rabbitmq
     version: 13.0.0
     repository: "https://charts.bitnami.com/bitnami"
+  - name: keycloak
+    version: 21.0.3
+    repository: "https://charts.bitnami.com/bitnami"
   - name: couchdb
     version: 4.5.0
     repository: "https://apache.github.io/couchdb-helm/"

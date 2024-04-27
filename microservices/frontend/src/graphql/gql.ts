@@ -13,9 +13,12 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  * Therefore it is highly recommended to use the babel or swc plugin for production.
  */
 const documents = {
-    "\n  query PostById($id: Cuid!) {\n    post(id: $id) {\n      id\n      author {\n        id\n        firstName\n        lastName\n        createdAt\n        updatedAt\n      }\n      title\n      slug\n      content\n      createdAt\n      updatedAt\n    }\n  }\n": types.PostByIdDocument,
-    "\n  query PostBySlug($slug: String!) {\n    postBySlug(slug: $slug) {\n      id\n      author {\n        id\n        firstName\n        lastName\n        createdAt\n        updatedAt\n      }\n      title\n      slug\n      content\n      createdAt\n      updatedAt\n    }\n  }\n": types.PostBySlugDocument,
-    "\n  query Posts($input: PostPaginationInput! = {}) {\n    posts(input: $input) {\n      edges {\n        node {\n          id\n          author {\n            id\n            firstName\n            lastName\n            createdAt\n            updatedAt\n          }\n          title\n          slug\n          content\n          createdAt\n          updatedAt\n        }\n      }\n      info {\n        hasNextPage\n        hasPrevPage\n        total\n        count\n      }\n    }\n  }\n": types.PostsDocument,
+  '\n  query PostById($id: Cuid!) {\n    post(id: $id) {\n      id\n      author {\n        id\n        firstName\n        lastName\n        createdAt\n        updatedAt\n      }\n      title\n      slug\n      content\n      createdAt\n      updatedAt\n    }\n  }\n':
+    types.PostByIdDocument,
+  '\n  query PostBySlug($slug: String!) {\n    postBySlug(slug: $slug) {\n      id\n      author {\n        id\n        firstName\n        lastName\n        createdAt\n        updatedAt\n      }\n      title\n      slug\n      content\n      createdAt\n      updatedAt\n    }\n  }\n':
+    types.PostBySlugDocument,
+  '\n  query Posts($input: PostPaginationInput! = {}) {\n    posts(input: $input) {\n      data {\n        id\n        author {\n          id\n          firstName\n          lastName\n          createdAt\n          updatedAt\n        }\n        title\n        slug\n        content\n        createdAt\n        updatedAt\n      }\n      pageInfo {\n        hasNextPage\n        hasPrevPage\n      }\n    }\n  }\n':
+    types.PostsDocument,
 };
 
 /**
@@ -35,18 +38,25 @@ export function gql(source: string): unknown;
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "\n  query PostById($id: Cuid!) {\n    post(id: $id) {\n      id\n      author {\n        id\n        firstName\n        lastName\n        createdAt\n        updatedAt\n      }\n      title\n      slug\n      content\n      createdAt\n      updatedAt\n    }\n  }\n"): (typeof documents)["\n  query PostById($id: Cuid!) {\n    post(id: $id) {\n      id\n      author {\n        id\n        firstName\n        lastName\n        createdAt\n        updatedAt\n      }\n      title\n      slug\n      content\n      createdAt\n      updatedAt\n    }\n  }\n"];
+export function gql(
+  source: '\n  query PostById($id: Cuid!) {\n    post(id: $id) {\n      id\n      author {\n        id\n        firstName\n        lastName\n        createdAt\n        updatedAt\n      }\n      title\n      slug\n      content\n      createdAt\n      updatedAt\n    }\n  }\n',
+): (typeof documents)['\n  query PostById($id: Cuid!) {\n    post(id: $id) {\n      id\n      author {\n        id\n        firstName\n        lastName\n        createdAt\n        updatedAt\n      }\n      title\n      slug\n      content\n      createdAt\n      updatedAt\n    }\n  }\n'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "\n  query PostBySlug($slug: String!) {\n    postBySlug(slug: $slug) {\n      id\n      author {\n        id\n        firstName\n        lastName\n        createdAt\n        updatedAt\n      }\n      title\n      slug\n      content\n      createdAt\n      updatedAt\n    }\n  }\n"): (typeof documents)["\n  query PostBySlug($slug: String!) {\n    postBySlug(slug: $slug) {\n      id\n      author {\n        id\n        firstName\n        lastName\n        createdAt\n        updatedAt\n      }\n      title\n      slug\n      content\n      createdAt\n      updatedAt\n    }\n  }\n"];
+export function gql(
+  source: '\n  query PostBySlug($slug: String!) {\n    postBySlug(slug: $slug) {\n      id\n      author {\n        id\n        firstName\n        lastName\n        createdAt\n        updatedAt\n      }\n      title\n      slug\n      content\n      createdAt\n      updatedAt\n    }\n  }\n',
+): (typeof documents)['\n  query PostBySlug($slug: String!) {\n    postBySlug(slug: $slug) {\n      id\n      author {\n        id\n        firstName\n        lastName\n        createdAt\n        updatedAt\n      }\n      title\n      slug\n      content\n      createdAt\n      updatedAt\n    }\n  }\n'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "\n  query Posts($input: PostPaginationInput! = {}) {\n    posts(input: $input) {\n      edges {\n        node {\n          id\n          author {\n            id\n            firstName\n            lastName\n            createdAt\n            updatedAt\n          }\n          title\n          slug\n          content\n          createdAt\n          updatedAt\n        }\n      }\n      info {\n        hasNextPage\n        hasPrevPage\n        total\n        count\n      }\n    }\n  }\n"): (typeof documents)["\n  query Posts($input: PostPaginationInput! = {}) {\n    posts(input: $input) {\n      edges {\n        node {\n          id\n          author {\n            id\n            firstName\n            lastName\n            createdAt\n            updatedAt\n          }\n          title\n          slug\n          content\n          createdAt\n          updatedAt\n        }\n      }\n      info {\n        hasNextPage\n        hasPrevPage\n        total\n        count\n      }\n    }\n  }\n"];
+export function gql(
+  source: '\n  query Posts($input: PostPaginationInput! = {}) {\n    posts(input: $input) {\n      data {\n        id\n        author {\n          id\n          firstName\n          lastName\n          createdAt\n          updatedAt\n        }\n        title\n        slug\n        content\n        createdAt\n        updatedAt\n      }\n      pageInfo {\n        hasNextPage\n        hasPrevPage\n      }\n    }\n  }\n',
+): (typeof documents)['\n  query Posts($input: PostPaginationInput! = {}) {\n    posts(input: $input) {\n      data {\n        id\n        author {\n          id\n          firstName\n          lastName\n          createdAt\n          updatedAt\n        }\n        title\n        slug\n        content\n        createdAt\n        updatedAt\n      }\n      pageInfo {\n        hasNextPage\n        hasPrevPage\n      }\n    }\n  }\n'];
 
 export function gql(source: string) {
   return (documents as any)[source] ?? {};
 }
 
-export type DocumentType<TDocumentNode extends DocumentNode<any, any>> = TDocumentNode extends DocumentNode<  infer TType,  any>  ? TType  : never;
+export type DocumentType<TDocumentNode extends DocumentNode<any, any>> =
+  TDocumentNode extends DocumentNode<infer TType, any> ? TType : never;

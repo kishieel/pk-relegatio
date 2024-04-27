@@ -20,5 +20,4 @@ export class PostPaginationInput extends GraphqlPaginationInput({
     dataType: Post,
     orderByType: PostOrderBy,
     filterByType: PostFilterBy,
-    pagingType: 'offset',
 }) {}

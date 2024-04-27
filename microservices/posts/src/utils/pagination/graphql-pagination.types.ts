@@ -6,15 +6,11 @@ export interface EnumType<T> {
     [key: string]: T;
 }
 
-export interface GraphqlPaging<T extends 'offset' | 'cursor'> {
-    paging?: T extends 'offset'
-        ? { offset?: number; limit?: number }
-        : {
-              first?: number;
-              last?: number;
-              after?: string;
-              before?: string;
-          };
+export interface GraphqlPaging {
+    paging?: {
+        offset?: number;
+        limit?: number;
+    };
 }
 
 export interface GraphqlFilters<T = string> {
@@ -32,11 +28,10 @@ export interface GraphqlSorts<T = string> {
     }[];
 }
 
-export interface GraphqlPaginationInputArgs<DATA, ORDER, FILTER, PAGING extends 'offset' | 'cursor'> {
+export interface GraphqlPaginationInputArgs<DATA, ORDER, FILTER> {
     dataType: ClassType<DATA>;
     orderByType: EnumType<ORDER>;
     filterByType: EnumType<FILTER>;
-    pagingType: PAGING;
 }
 
 export interface GraphqlPaginationObjectArgs<DATA> {

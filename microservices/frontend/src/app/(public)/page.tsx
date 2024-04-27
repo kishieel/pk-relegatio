@@ -3,7 +3,7 @@ import { excerpt } from '@app/utils/excerpt.function';
 import { getClient } from '@app/apollo/apollo-client';
 import { POSTS_QUERY } from '@app/apollo/queries/posts';
 
-export default async function Home() {
+export default async function Page() {
   const client = getClient();
 
   const { data, error, errors } = await client.query({
@@ -20,7 +20,7 @@ export default async function Home() {
           <p className="text-lg leading-7 text-gray-500 dark:text-gray-400">Unpopular opinions on popular topics</p>
         </div>
         <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-          {data?.posts.edges.map(({ node: post }, index) => (
+          {data?.posts.data.map((post, index) => (
             <li key={index} className="py-12">
               <article>
                 <div className="space-y-2 xl:grid xl:grid-cols-4 xl:items-baseline xl:space-y-0">

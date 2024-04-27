@@ -1,5 +1,6 @@
 x-templates:
   nestjs-microservice-config: &nestjs-microservice-config
+    enabled: true
     port: 3000
     probe:
       path: /graphql?query=%7B__typename%7D
@@ -17,20 +18,26 @@ microservices:
     development:
       enabled: true
       source: /volumes/microservices/auth
-    hooks:
-      prisma.sh:
-        type: post-install,post-upgrade
-        weight: 5
-        source: |
-          #!/usr/bin/env sh
-          yarn prisma migrate deploy
-          yarn prisma generate
+    prisma:
+      enabled: true
     env:
       <<: *nest-microservice-env
       DATABASE_URL: mysql://root:root@mysql:3306/auth
       JWT_SECRET: secret
       ACCESS_TOKEN_EXPIRES_IN: 30d
       REFRESH_TOKEN_EXPIRES_IN: 30d
+
+  followers:
+    <<: *nestjs-microservice-config
+    image: ghcr.io/kishieel/relegatio-followers:1.0.0
+    development:
+      enabled: true
+      source: /volumes/microservices/followers
+    couchdb:
+      enabled: true
+    env:
+      <<: *nest-microservice-env
+      DATABASE_URL: http://admin:admin@couchdb-svc-couchdb:5984
 
   gateway:
     <<: *nestjs-microservice-config
@@ -48,6 +55,9 @@ microservices:
         name: gateway
         hostname: api.relegatio.localhost
         path: /graphql
+        tls:
+          enabled: true
+          secretName: relegatio-tls
         annotations:
           nginx.ingress.kubernetes.io/rewrite-target: /graphql
 
@@ -76,6 +86,7 @@ microservices:
       DATABASE_URL: http://admin:admin@couchdb-svc-couchdb:5984
 
   frontend:
+    enabled: true
     image: ghcr.io/kishieel/relegatio-frontend:1.0.1
     port: 3000
     development:
@@ -94,6 +105,9 @@ microservices:
         name: frontend
         hostname: relegatio.localhost
         path: /
+        tls:
+          enabled: true
+          secretName: relegatio-tls
         annotations:
           nginx.ingress.kubernetes.io/rewrite-target: /
 
@@ -128,6 +142,8 @@ rabbitmq:
     enabled: true
     hostname: rabbit.relegatio.localhost
     ingressClassName: nginx
+    extraTls:
+      - secretName: relegatio-tls
 
 couchdb:
   fullnameOverride: couchdb
@@ -149,11 +165,20 @@ couchdb:
   couchdbConfig:
     couchdb:
       uuid: 1298f2bb208f47a69f31a7d6afdd05f5
+    chttpd:
+      authentication_handlers: '{chttpd_auth, proxy_authentication_handler}, {chttpd_auth, cookie_authentication_handler}, {chttpd_auth, default_authentication_handler}'
+    chttpd_auth:
+      x_auth_username: X-Auth-CouchDB-Username
+      x_auth_roles: X-Auth-CouchDB-Roles
+      x_auth_token: X-Auth-CouchDB-Token
+      proxy_use_secret: true
   ingress:
     enabled: true
     hosts:
       - couchdb.relegatio.localhost
     className: nginx
+    tls:
+      - secretName: relegatio-tls
     annotations:
       nginx.ingress.kubernetes.io/affinity: "cookie"
       nginx.ingress.kubernetes.io/session-cookie-name: "couchdb-session"
@@ -165,6 +190,40 @@ mailpit:
     enabled: true
     hostname: mailpit.relegatio.localhost
     ingressClassName: nginx
+    extraTls:
+      - secretName: relegatio-tls
+
+keycloak:
+  fullnameOverride: keycloak
+  auth:
+    adminUser: admin
+    adminPassword: admin
+  proxy: edge
+  postgresql:
+    fullnameOverride: keycloak-postgres
+    auth:
+      username: admin
+      password: admin
+    primary:
+      persistence:
+        enabled: true
+  ingress:
+    enabled: true
+    hostname: keycloak.relegatio.localhost
+    ingressClassName: nginx
+    extraTls:
+      - secretName: relegatio-tls
+  keycloakConfigCli:
+    enabled: true
+    configuration:
+      master: |
+        {
+          "realm" : "master",
+          "clients": [],
+          "attributes": {
+            "frontendUrl": "https://keycloak.relegatio.localhost"
+          }
+        }
 
 imagePullSecrets:
   - name: ghcr-secret

@@ -1,44 +1,30 @@
 import { GraphqlPaginationObjectArgs } from '@app/utils/pagination/graphql-pagination.types';
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { GraphqlPaginator } from '@app/utils/pagination/graphql-paginator';
 
 export const GraphqlPaginationObject = <DATA>(args: GraphqlPaginationObjectArgs<DATA>) => {
-    @ObjectType(`${args.dataType.name}PaginationMeta`)
+    @ObjectType(`${args.dataType.name}PaginationPageInfo`)
     class PaginationInfoObject {
-        @Field(() => String, { nullable: true })
-        firstCursor?: string;
+        @Field(() => Int)
+        offset: number;
 
-        @Field(() => String, { nullable: true })
-        lastCursor?: string;
+        @Field(() => Int)
+        limit: number;
 
         @Field(() => Boolean)
         hasNextPage: boolean;
 
         @Field(() => Boolean)
         hasPrevPage: boolean;
-
-        @Field(() => Number)
-        total: number;
-
-        @Field(() => Number)
-        count: number;
-    }
-
-    @ObjectType(`${args.dataType.name}PaginationEdge`)
-    class PaginationEdgeObject {
-        @Field(() => args.dataType)
-        node: DATA;
-
-        @Field(() => String)
-        cursor: string;
     }
 
     @ObjectType(`${args.dataType.name}Pagination`)
-    class PaginationObject {
-        @Field(() => [PaginationEdgeObject])
-        edges: PaginationEdgeObject[];
+    class PaginationObject extends GraphqlPaginator {
+        @Field(() => [args.dataType])
+        data: DATA[];
 
         @Field(() => PaginationInfoObject)
-        info: PaginationInfoObject;
+        pageInfo: PaginationInfoObject;
     }
 
     return PaginationObject;

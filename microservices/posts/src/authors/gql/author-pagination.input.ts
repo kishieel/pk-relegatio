@@ -20,5 +20,4 @@ export class AuthorPaginationInput extends GraphqlPaginationInput({
     dataType: Author,
     orderByType: AuthorOrderBy,
     filterByType: AuthorFilterBy,
-    pagingType: 'offset',
 }) {}

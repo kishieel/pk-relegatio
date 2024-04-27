@@ -31,6 +31,63 @@ spec:
   policyTypes:
     - Ingress
 ---
+# Source: k8s/charts/keycloak/charts/postgresql/templates/primary/networkpolicy.yaml
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: keycloak-postgres
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/version: 16.2.0
+    helm.sh/chart: postgresql-15.2.5
+    app.kubernetes.io/component: primary
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: release-name
+      app.kubernetes.io/name: postgresql
+      app.kubernetes.io/component: primary
+  policyTypes:
+    - Ingress
+    - Egress
+  egress:
+    - {}
+  ingress:
+    - ports:
+        - port: 5432
+---
+# Source: k8s/charts/keycloak/templates/networkpolicy.yaml
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: keycloak
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: keycloak
+    app.kubernetes.io/version: 24.0.3
+    helm.sh/chart: keycloak-21.0.3
+    app.kubernetes.io/component: keycloak
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: release-name
+      app.kubernetes.io/name: keycloak
+      app.kubernetes.io/component: keycloak
+  policyTypes:
+    - Ingress
+    - Egress
+  egress:
+    - {}
+  ingress:
+    - ports:
+        - port: 7800
+        - port: 8080
+---
 # Source: k8s/charts/mysql/templates/networkpolicy.yaml
 kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
@@ -130,6 +187,35 @@ metadata:
     release: release-name
     heritage: Helm
 ---
+# Source: k8s/charts/keycloak/charts/postgresql/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: keycloak-postgres
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/version: 16.2.0
+    helm.sh/chart: postgresql-15.2.5
+automountServiceAccountToken: false
+---
+# Source: k8s/charts/keycloak/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: keycloak
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: keycloak
+    app.kubernetes.io/version: 24.0.3
+    helm.sh/chart: keycloak-21.0.3
+    app.kubernetes.io/component: keycloak
+automountServiceAccountToken: false
+---
 # Source: k8s/charts/mysql/templates/serviceaccount.yaml
 apiVersion: v1
 kind: ServiceAccount
@@ -207,6 +293,41 @@ data:
   erlangCookie: "bWFrZS1zb21ldGhpbmctdXA="
   cookieAuthSecret: "Y29va2llLWF1dGgtc2VjcmV0"
 ---
+# Source: k8s/charts/keycloak/charts/postgresql/templates/secrets.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: keycloak-postgres
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/version: 16.2.0
+    helm.sh/chart: postgresql-15.2.5
+type: Opaque
+data:
+  postgres-password: "cTZ0Qkl6MFZodQ=="
+  password: "YWRtaW4="
+  # We don't auto-generate LDAP password when it's not provided as we do for other passwords
+---
+# Source: k8s/charts/keycloak/templates/secrets.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: keycloak
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: keycloak
+    app.kubernetes.io/version: 24.0.3
+    helm.sh/chart: keycloak-21.0.3
+    app.kubernetes.io/component: keycloak
+type: Opaque
+data:
+  admin-password: "YWRtaW4="
+---
 # Source: k8s/charts/mysql/templates/secrets.yaml
 apiVersion: v1
 kind: Secret
@@ -256,7 +377,7 @@ metadata:
 type: Opaque
 data:
   rabbitmq-password: "YWRtaW4="
-  rabbitmq-erlang-cookie: "NzVzQzdES1Q1MTRRRjcxaG9OODQ3Y0Y0aE5JZGNNcU0="
+  rabbitmq-erlang-cookie: "d0VDbmtLMFV3b0QzVWk5eERiTDBSQ3JveG1Wc1lTNWM="
 ---
 # Source: k8s/charts/redis/templates/secret.yaml
 apiVersion: v1
@@ -272,7 +393,7 @@ metadata:
     helm.sh/chart: redis-19.0.1
 type: Opaque
 data:
-  redis-password: "bUdzbVBxTTNoag=="
+  redis-password: "WU1QYldndmVTcg=="
 ---
 # Source: k8s/charts/couchdb/templates/configmap.yaml
 apiVersion: v1
@@ -287,8 +408,15 @@ metadata:
 data:
   inifile: |
     [chttpd]
+    authentication_handlers = {chttpd_auth, proxy_authentication_handler}, {chttpd_auth, cookie_authentication_handler}, {chttpd_auth, default_authentication_handler}
     bind_address = any
     require_valid_user = false
+    
+    [chttpd_auth]
+    proxy_use_secret = true
+    x_auth_roles = X-Auth-CouchDB-Roles
+    x_auth_token = X-Auth-CouchDB-Token
+    x_auth_username = X-Auth-CouchDB-Username
     
     [couchdb]
     uuid = 1298f2bb208f47a69f31a7d6afdd05f5
@@ -298,6 +426,59 @@ data:
   seedlistinifile: |
     [cluster]
     seedlist = couchdb@couchdb-couchdb-0.couchdb-couchdb.default.svc.cluster.local,couchdb@couchdb-couchdb-1.couchdb-couchdb.default.svc.cluster.local,couchdb@couchdb-couchdb-2.couchdb-couchdb.default.svc.cluster.local
+---
+# Source: k8s/charts/keycloak/templates/configmap-env-vars.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keycloak-env-vars
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: keycloak
+    app.kubernetes.io/version: 24.0.3
+    helm.sh/chart: keycloak-21.0.3
+    app.kubernetes.io/component: keycloak
+data:
+  KEYCLOAK_ADMIN: "admin"
+  KEYCLOAK_HTTP_PORT: "8080"
+  KEYCLOAK_PROXY: "edge"
+  KEYCLOAK_ENABLE_STATISTICS: "false"
+  KEYCLOAK_DATABASE_HOST: "keycloak-postgres"
+  KEYCLOAK_DATABASE_PORT: "5432"
+  KEYCLOAK_DATABASE_NAME: "bitnami_keycloak"
+  KEYCLOAK_DATABASE_USER: "admin"
+  KEYCLOAK_PRODUCTION:  "false"
+  KEYCLOAK_ENABLE_HTTPS: "false"
+  KEYCLOAK_CACHE_TYPE: "ispn"
+  KEYCLOAK_CACHE_STACK: "kubernetes"
+  JAVA_OPTS_APPEND: "-Djgroups.dns.query=keycloak-headless.default.svc.cluster.local"
+  KEYCLOAK_LOG_OUTPUT: "default"
+  KEYCLOAK_LOG_LEVEL: "INFO"
+---
+# Source: k8s/charts/keycloak/templates/keycloak-config-cli-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keycloak-keycloak-config-cli-configmap
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: keycloak
+    app.kubernetes.io/version: 24.0.3
+    helm.sh/chart: keycloak-21.0.3
+    app.kubernetes.io/component: keycloak-config-cli
+data:
+  master: |
+    {
+      "realm" : "master",
+      "clients": [],
+      "attributes": {
+        "frontendUrl": "https://keycloak.relegatio.localhost"
+      }
+    }
 ---
 # Source: k8s/charts/mysql/templates/primary/configmap.yaml
 apiVersion: v1
@@ -584,17 +765,6 @@ data:
     ARGS+=("--include" "/opt/bitnami/redis/etc/replica.conf")
     exec redis-server "${ARGS[@]}"
 ---
-# Source: k8s/templates/nodejs.yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: auth-prisma-sh-configmap
-data:
-  prisma.sh:  |
-    #!/usr/bin/env sh
-    yarn prisma migrate deploy
-    yarn prisma generate
----
 # Source: k8s/charts/rabbitmq/templates/role.yaml
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
@@ -674,6 +844,121 @@ spec:
   selector:
     app: couchdb
     release: release-name
+---
+# Source: k8s/charts/keycloak/charts/postgresql/templates/primary/svc-headless.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak-postgres-hl
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/version: 16.2.0
+    helm.sh/chart: postgresql-15.2.5
+    app.kubernetes.io/component: primary
+  annotations:
+    # Use this annotation in addition to the actual publishNotReadyAddresses
+    # field below because the annotation will stop being respected soon but the
+    # field is broken in some versions of Kubernetes:
+    # https://github.com/kubernetes/kubernetes/issues/58662
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  # We want all pods in the StatefulSet to have their addresses published for
+  # the sake of the other Postgresql pods even before they're ready, since they
+  # have to be able to talk to each other in order to become ready.
+  publishNotReadyAddresses: true
+  ports:
+    - name: tcp-postgresql
+      port: 5432
+      targetPort: tcp-postgresql
+  selector:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/component: primary
+---
+# Source: k8s/charts/keycloak/charts/postgresql/templates/primary/svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak-postgres
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/version: 16.2.0
+    helm.sh/chart: postgresql-15.2.5
+    app.kubernetes.io/component: primary
+spec:
+  type: ClusterIP
+  sessionAffinity: None
+  ports:
+    - name: tcp-postgresql
+      port: 5432
+      targetPort: tcp-postgresql
+      nodePort: null
+  selector:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/component: primary
+---
+# Source: k8s/charts/keycloak/templates/headless-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak-headless
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: keycloak
+    app.kubernetes.io/version: 24.0.3
+    helm.sh/chart: keycloak-21.0.3
+    app.kubernetes.io/component: keycloak
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: http
+  publishNotReadyAddresses: true
+  selector:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/name: keycloak
+    app.kubernetes.io/component: keycloak
+---
+# Source: k8s/charts/keycloak/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: keycloak
+    app.kubernetes.io/version: 24.0.3
+    helm.sh/chart: keycloak-21.0.3
+    app.kubernetes.io/component: keycloak
+spec:
+  type: ClusterIP
+  sessionAffinity: None
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: http
+      nodePort: null
+  selector:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/name: keycloak
+    app.kubernetes.io/component: keycloak
 ---
 # Source: k8s/charts/mailpit/templates/http-service.yaml
 apiVersion: v1
@@ -933,10 +1218,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: frontend
+  name: followers
 spec:
   selector:
-    name: frontend
+    name: followers
   ports:
     - port: 3000
       targetPort: 3000
@@ -1086,6 +1371,32 @@ spec:
         runAsGroup: 1000
         fsGroup: 1000
       
+      
+      initContainers:
+        - name: auth-prisma-migrate
+          image: ghcr.io/kishieel/relegatio-auth:1.0.2
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: ACCESS_TOKEN_EXPIRES_IN
+              value: "30d"
+            - name: DATABASE_URL
+              value: "mysql://root:root@mysql:3306/auth"
+            - name: HOST
+              value: "0.0.0.0"
+            - name: JWT_SECRET
+              value: "secret"
+            - name: PORT
+              value: "3000"
+            - name: RABBIT_HTTP_URL
+              value: "http://admin:admin@rabbit:15672"
+            - name: RABBIT_RMQ_URL
+              value: "amqp://admin:admin@rabbit:5672"
+            - name: REFRESH_TOKEN_EXPIRES_IN
+              value: "30d"
+          command: ["yarn", "prisma", "migrate", "deploy"]
+          volumeMounts:
+            - mountPath: /app
+              name: auth-code
       containers:
         - name: auth
           image: ghcr.io/kishieel/relegatio-auth:1.0.2
@@ -1110,12 +1421,9 @@ spec:
             - name: REFRESH_TOKEN_EXPIRES_IN
               value: "30d"
           resources:
-            limits:
-              cpu: 2000m 
-              memory: 2Gi
             requests:
-              cpu: 1000m
-              memory: 1Gi
+              cpu: 100m
+              memory: 100Mi
           volumeMounts:
             - mountPath: /app
               name: auth-code
@@ -1126,9 +1434,10 @@ spec:
               httpHeaders:
                 - name: apollo-require-preflight
                   value: "true"
-            initialDelaySeconds: 30
+            initialDelaySeconds: 300
             periodSeconds: 10
             timeoutSeconds: 5
+            failureThreshold: 5
           readinessProbe:
             httpGet:
               path: /graphql?query=%7B__typename%7D
@@ -1136,9 +1445,10 @@ spec:
               httpHeaders:
                 - name: apollo-require-preflight
                   value: "true"
-            initialDelaySeconds: 30
+            initialDelaySeconds: 300
             periodSeconds: 10
             timeoutSeconds: 5
+            failureThreshold: 5
       volumes:
         - name: auth-code
           hostPath:
@@ -1149,17 +1459,17 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: frontend
+  name: followers
   labels:
-    name: frontend
+    name: followers
 spec:
   selector:
     matchLabels:
-      name: frontend
+      name: followers
   template:
     metadata:
       labels:
-        name: frontend
+        name: followers
     spec:
       imagePullSecrets:
         - name: ghcr-secret
@@ -1168,53 +1478,76 @@ spec:
         runAsGroup: 1000
         fsGroup: 1000
       
-      containers:
-        - name: frontend
-          image: ghcr.io/kishieel/relegatio-frontend:1.0.1
-          ports:
-            - containerPort: 3000
+      
+      initContainers:
+        - name: followers-couchdb-migrate
+          image: ghcr.io/kishieel/relegatio-followers:1.0.0
           imagePullPolicy: IfNotPresent
           env:
+            - name: DATABASE_URL
+              value: "http://admin:admin@couchdb-svc-couchdb:5984"
             - name: HOST
               value: "0.0.0.0"
             - name: PORT
               value: "3000"
-            - name: REACT_APP_GRAPHQL_URL
-              value: "http://api.relegatio.localhost/graphql"
-          resources:
-            limits:
-              cpu: 2000m 
-              memory: 2Gi
-            requests:
-              cpu: 1000m
-              memory: 1Gi
+            - name: RABBIT_HTTP_URL
+              value: "http://admin:admin@rabbit:15672"
+            - name: RABBIT_RMQ_URL
+              value: "amqp://admin:admin@rabbit:5672"
+          command: [ "yarn", "couchdb:migrate" ]
           volumeMounts:
             - mountPath: /app
-              name: frontend-code
+              name: followers-code
+      containers:
+        - name: followers
+          image: ghcr.io/kishieel/relegatio-followers:1.0.0
+          ports:
+            - containerPort: 3000
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: DATABASE_URL
+              value: "http://admin:admin@couchdb-svc-couchdb:5984"
+            - name: HOST
+              value: "0.0.0.0"
+            - name: PORT
+              value: "3000"
+            - name: RABBIT_HTTP_URL
+              value: "http://admin:admin@rabbit:15672"
+            - name: RABBIT_RMQ_URL
+              value: "amqp://admin:admin@rabbit:5672"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+          volumeMounts:
+            - mountPath: /app
+              name: followers-code
           livenessProbe:
             httpGet:
-              path: /
+              path: /graphql?query=%7B__typename%7D
               port: 3000
               httpHeaders:
                 - name: apollo-require-preflight
                   value: "true"
-            initialDelaySeconds: 30
+            initialDelaySeconds: 300
             periodSeconds: 10
             timeoutSeconds: 5
+            failureThreshold: 5
           readinessProbe:
             httpGet:
-              path: /
+              path: /graphql?query=%7B__typename%7D
               port: 3000
               httpHeaders:
                 - name: apollo-require-preflight
                   value: "true"
-            initialDelaySeconds: 30
+            initialDelaySeconds: 300
             periodSeconds: 10
             timeoutSeconds: 5
+            failureThreshold: 5
       volumes:
-        - name: frontend-code
+        - name: followers-code
           hostPath:
-            path: /volumes/microservices/frontend
+            path: /volumes/microservices/followers
             type: Directory
 ---
 # Source: k8s/templates/nodejs.yaml
@@ -1240,6 +1573,7 @@ spec:
         runAsGroup: 1000
         fsGroup: 1000
       
+      
       containers:
         - name: gateway
           image: ghcr.io/kishieel/relegatio-gateway:1.0.3
@@ -1260,12 +1594,9 @@ spec:
             - name: RABBIT_RMQ_URL
               value: "amqp://admin:admin@rabbit:5672"
           resources:
-            limits:
-              cpu: 2000m 
-              memory: 2Gi
             requests:
-              cpu: 1000m
-              memory: 1Gi
+              cpu: 100m
+              memory: 100Mi
           volumeMounts:
             - mountPath: /app
               name: gateway-code
@@ -1276,9 +1607,10 @@ spec:
               httpHeaders:
                 - name: apollo-require-preflight
                   value: "true"
-            initialDelaySeconds: 30
+            initialDelaySeconds: 300
             periodSeconds: 10
             timeoutSeconds: 5
+            failureThreshold: 5
           readinessProbe:
             httpGet:
               path: /graphql?query=%7B__typename%7D
@@ -1286,9 +1618,10 @@ spec:
               httpHeaders:
                 - name: apollo-require-preflight
                   value: "true"
-            initialDelaySeconds: 30
+            initialDelaySeconds: 300
             periodSeconds: 10
             timeoutSeconds: 5
+            failureThreshold: 5
       volumes:
         - name: gateway-code
           hostPath:
@@ -1318,6 +1651,7 @@ spec:
         runAsGroup: 1000
         fsGroup: 1000
       
+      
       containers:
         - name: notifications
           image: ghcr.io/kishieel/relegatio-notifications:1.0.2
@@ -1336,12 +1670,9 @@ spec:
             - name: RABBIT_RMQ_URL
               value: "amqp://admin:admin@rabbit:5672"
           resources:
-            limits:
-              cpu: 2000m 
-              memory: 2Gi
             requests:
-              cpu: 1000m
-              memory: 1Gi
+              cpu: 100m
+              memory: 100Mi
           volumeMounts:
             - mountPath: /app
               name: notifications-code
@@ -1352,9 +1683,10 @@ spec:
               httpHeaders:
                 - name: apollo-require-preflight
                   value: "true"
-            initialDelaySeconds: 30
+            initialDelaySeconds: 300
             periodSeconds: 10
             timeoutSeconds: 5
+            failureThreshold: 5
           readinessProbe:
             httpGet:
               path: /health
@@ -1362,9 +1694,10 @@ spec:
               httpHeaders:
                 - name: apollo-require-preflight
                   value: "true"
-            initialDelaySeconds: 30
+            initialDelaySeconds: 300
             periodSeconds: 10
             timeoutSeconds: 5
+            failureThreshold: 5
       volumes:
         - name: notifications-code
           hostPath:
@@ -1394,6 +1727,7 @@ spec:
         runAsGroup: 1000
         fsGroup: 1000
       
+      
       containers:
         - name: posts
           image: ghcr.io/kishieel/relegatio-posts:1.0.3
@@ -1412,12 +1746,9 @@ spec:
             - name: RABBIT_RMQ_URL
               value: "amqp://admin:admin@rabbit:5672"
           resources:
-            limits:
-              cpu: 2000m 
-              memory: 2Gi
             requests:
-              cpu: 1000m
-              memory: 1Gi
+              cpu: 100m
+              memory: 100Mi
           volumeMounts:
             - mountPath: /app
               name: posts-code
@@ -1428,9 +1759,10 @@ spec:
               httpHeaders:
                 - name: apollo-require-preflight
                   value: "true"
-            initialDelaySeconds: 30
+            initialDelaySeconds: 300
             periodSeconds: 10
             timeoutSeconds: 5
+            failureThreshold: 5
           readinessProbe:
             httpGet:
               path: /graphql?query=%7B__typename%7D
@@ -1438,9 +1770,10 @@ spec:
               httpHeaders:
                 - name: apollo-require-preflight
                   value: "true"
-            initialDelaySeconds: 30
+            initialDelaySeconds: 300
             periodSeconds: 10
             timeoutSeconds: 5
+            failureThreshold: 5
       volumes:
         - name: posts-code
           hostPath:
@@ -1490,12 +1823,12 @@ spec:
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: frontend
+  name: followers
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: frontend
+    name: followers
   minReplicas: 1
   maxReplicas: 2
   behavior:
@@ -1666,7 +1999,7 @@ spec:
         app: couchdb
         release: release-name
       annotations:
-        checksum/config: ffd980ed481b8e2f2e4b7681196e9d490e298d16af669cf277805f8d8058be5a
+        checksum/config: 01eb35da4e0439b85b16d053fba230339cd4ff16af65746d50be22eda412c9f0
         checksum/secret: 0e4c0484267edf7da606442e4d705c83dda7b2a00d9c4fae632ed7344c3534bb
     spec:
       serviceAccountName: couchdb-couchdb
@@ -1772,6 +2105,394 @@ spec:
         resources:
           requests:
             storage: "10Gi"
+---
+# Source: k8s/charts/keycloak/charts/postgresql/templates/primary/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: keycloak-postgres
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/version: 16.2.0
+    helm.sh/chart: postgresql-15.2.5
+    app.kubernetes.io/component: primary
+spec:
+  replicas: 1
+  serviceName: keycloak-postgres-hl
+  updateStrategy:
+    rollingUpdate: {}
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: release-name
+      app.kubernetes.io/name: postgresql
+      app.kubernetes.io/component: primary
+  template:
+    metadata:
+      name: keycloak-postgres
+      labels:
+        app.kubernetes.io/instance: release-name
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: postgresql
+        app.kubernetes.io/version: 16.2.0
+        helm.sh/chart: postgresql-15.2.5
+        app.kubernetes.io/component: primary
+    spec:
+      serviceAccountName: keycloak-postgres
+      
+      automountServiceAccountToken: false
+      affinity:
+        podAffinity:
+          
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/instance: release-name
+                    app.kubernetes.io/name: postgresql
+                    app.kubernetes.io/component: primary
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+        nodeAffinity:
+          
+      securityContext:
+        fsGroup: 1001
+        fsGroupChangePolicy: Always
+        supplementalGroups: []
+        sysctls: []
+      hostNetwork: false
+      hostIPC: false
+      containers:
+        - name: postgresql
+          image: docker.io/bitnami/postgresql:16.2.0-debian-12-r15
+          imagePullPolicy: "IfNotPresent"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1001
+            runAsNonRoot: true
+            runAsUser: 1001
+            seLinuxOptions: {}
+            seccompProfile:
+              type: RuntimeDefault
+          env:
+            - name: BITNAMI_DEBUG
+              value: "false"
+            - name: POSTGRESQL_PORT_NUMBER
+              value: "5432"
+            - name: POSTGRESQL_VOLUME_DIR
+              value: "/bitnami/postgresql"
+            - name: PGDATA
+              value: "/bitnami/postgresql/data"
+            # Authentication
+            - name: POSTGRES_USER
+              value: "admin"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-postgres
+                  key: password
+            - name: POSTGRES_POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-postgres
+                  key: postgres-password
+            - name: POSTGRES_DATABASE
+              value: "bitnami_keycloak"
+            # Replication
+            # Initdb
+            # Standby
+            # LDAP
+            - name: POSTGRESQL_ENABLE_LDAP
+              value: "no"
+            # TLS
+            - name: POSTGRESQL_ENABLE_TLS
+              value: "no"
+            # Audit
+            - name: POSTGRESQL_LOG_HOSTNAME
+              value: "false"
+            - name: POSTGRESQL_LOG_CONNECTIONS
+              value: "false"
+            - name: POSTGRESQL_LOG_DISCONNECTIONS
+              value: "false"
+            - name: POSTGRESQL_PGAUDIT_LOG_CATALOG
+              value: "off"
+            # Others
+            - name: POSTGRESQL_CLIENT_MIN_MESSAGES
+              value: "error"
+            - name: POSTGRESQL_SHARED_PRELOAD_LIBRARIES
+              value: "pgaudit"
+          ports:
+            - name: tcp-postgresql
+              containerPort: 5432
+          livenessProbe:
+            failureThreshold: 6
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - exec pg_isready -U "admin" -d "dbname=bitnami_keycloak" -h 127.0.0.1 -p 5432
+          readinessProbe:
+            failureThreshold: 6
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - -e
+                - |
+                  exec pg_isready -U "admin" -d "dbname=bitnami_keycloak" -h 127.0.0.1 -p 5432
+                  [ -f /opt/bitnami/postgresql/tmp/.initialized ] || [ -f /bitnami/postgresql/.initialized ]
+          resources:
+            limits:
+              cpu: 150m
+              ephemeral-storage: 1024Mi
+              memory: 192Mi
+            requests:
+              cpu: 100m
+              ephemeral-storage: 50Mi
+              memory: 128Mi
+          volumeMounts:
+            - name: empty-dir
+              mountPath: /tmp
+              subPath: tmp-dir
+            - name: empty-dir
+              mountPath: /opt/bitnami/postgresql/conf
+              subPath: app-conf-dir
+            - name: empty-dir
+              mountPath: /opt/bitnami/postgresql/tmp
+              subPath: app-tmp-dir
+            - name: empty-dir
+              mountPath: /opt/bitnami/postgresql/logs
+              subPath: app-logs-dir
+            - name: dshm
+              mountPath: /dev/shm
+            - name: data
+              mountPath: /bitnami/postgresql
+      volumes:
+        - name: empty-dir
+          emptyDir: {}
+        - name: dshm
+          emptyDir:
+            medium: Memory
+  volumeClaimTemplates:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: data
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "8Gi"
+---
+# Source: k8s/charts/keycloak/templates/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: keycloak
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: keycloak
+    app.kubernetes.io/version: 24.0.3
+    helm.sh/chart: keycloak-21.0.3
+    app.kubernetes.io/component: keycloak
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  podManagementPolicy: Parallel
+  serviceName: keycloak-headless
+  updateStrategy:
+    rollingUpdate: {}
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: release-name
+      app.kubernetes.io/name: keycloak
+      app.kubernetes.io/component: keycloak
+  template:
+    metadata:
+      annotations:
+        checksum/configmap-env-vars: ff9be26129cf808378cfac6fb5f5dbeb635fc6dbf72187211324070d99ab014c
+        checksum/secrets: d1eb3f91ddb7915821cbda037e7d89d754ad42c9076927c09bfd52778ec0cf2b
+      labels:
+        app.kubernetes.io/instance: release-name
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: keycloak
+        app.kubernetes.io/version: 24.0.3
+        helm.sh/chart: keycloak-21.0.3
+        app.kubernetes.io/component: keycloak
+    spec:
+      serviceAccountName: keycloak
+      
+      automountServiceAccountToken: true
+      affinity:
+        podAffinity:
+          
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/instance: release-name
+                    app.kubernetes.io/name: keycloak
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+        nodeAffinity:
+          
+      securityContext:
+        fsGroup: 1001
+        fsGroupChangePolicy: Always
+        supplementalGroups: []
+        sysctls: []
+      enableServiceLinks: true
+      initContainers:
+        - name: init-quarkus-directory
+          image: docker.io/bitnami/keycloak:24.0.3-debian-12-r0
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/bash
+          args:
+            - -ec
+            - |
+              #!/bin/bash
+              cp -r /opt/bitnami/keycloak/lib/quarkus/* /quarkus
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1001
+            runAsNonRoot: true
+            runAsUser: 1001
+            seLinuxOptions: {}
+            seccompProfile:
+              type: RuntimeDefault
+          resources:
+            limits:
+              cpu: 750m
+              ephemeral-storage: 1024Mi
+              memory: 768Mi
+            requests:
+              cpu: 500m
+              ephemeral-storage: 50Mi
+              memory: 512Mi
+          volumeMounts:
+            - name: empty-dir
+              mountPath: /tmp
+              subPath: tmp-dir
+            - name: empty-dir
+              mountPath: /quarkus
+              subPath: app-quarkus-dir
+      containers:
+        - name: keycloak
+          image: docker.io/bitnami/keycloak:24.0.3-debian-12-r0
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1001
+            runAsNonRoot: true
+            runAsUser: 1001
+            seLinuxOptions: {}
+            seccompProfile:
+              type: RuntimeDefault
+          env:
+            - name: KUBERNETES_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: BITNAMI_DEBUG
+              value: "false"
+            - name: KEYCLOAK_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak
+                  key: admin-password
+            - name: KEYCLOAK_DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-postgres
+                  key: password
+            - name: KEYCLOAK_HTTP_RELATIVE_PATH
+              value: "/"
+          envFrom:
+            - configMapRef:
+                name: keycloak-env-vars
+          resources:
+            limits:
+              cpu: 750m
+              ephemeral-storage: 1024Mi
+              memory: 768Mi
+            requests:
+              cpu: 500m
+              ephemeral-storage: 50Mi
+              memory: 512Mi
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: discovery
+              containerPort: 7800
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 300
+            periodSeconds: 1
+            successThreshold: 1
+            timeoutSeconds: 5
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+            httpGet:
+              path: /realms/master
+              port: http
+          volumeMounts:
+            - name: empty-dir
+              mountPath: /tmp
+              subPath: tmp-dir
+            - name: empty-dir
+              mountPath: /opt/bitnami/keycloak/conf
+              subPath: app-conf-dir
+            - name: empty-dir
+              mountPath: /opt/bitnami/keycloak/lib/quarkus
+              subPath: app-quarkus-dir
+            - name: empty-dir
+              mountPath: /opt/bitnami/keycloak/data
+              subPath: app-data-dir
+      volumes:
+        - name: empty-dir
+          emptyDir: {}
 ---
 # Source: k8s/charts/mysql/templates/primary/statefulset.yaml
 apiVersion: apps/v1
@@ -2042,7 +2763,7 @@ spec:
         helm.sh/chart: rabbitmq-13.0.0
       annotations:
         checksum/config: 0845d01890a928270266dda9d6d6e4b74199bd3c5b77b7bc23b447f20d0113e6
-        checksum/secret: b5e509fd1b4427001af87f20e0a43749a1d7a495ae3b587e6b77d22f0d19a8c7
+        checksum/secret: 003a1e32c18365b949c3f6436ff1ffc77a0f956ed888a9386a6b4b1a25b3163f
     spec:
       
       serviceAccountName: rabbit
@@ -2265,7 +2986,7 @@ spec:
         checksum/configmap: 86bcc953bb473748a3d3dc60b7c11f34e60c93519234d4c37f42e22ada559d47
         checksum/health: aff24913d801436ea469d8d374b2ddb3ec4c43ee7ab24663d5f8ff1a1b6991a9
         checksum/scripts: bb405ab6e14129d9c1652d99ffde3146c358de2ef89164a4c63bb0b1894e7537
-        checksum/secret: d55b4f71f0b572c86712849b2ac3b2f3f2f50532b570bcc6103e31dae8aa0898
+        checksum/secret: 9ffb6b60b6cd137a74f53d593f58f854a83ddf44b3dc3bfbc3b70dc839cdbae9
     spec:
       
       securityContext:
@@ -2445,7 +3166,7 @@ spec:
         checksum/configmap: 86bcc953bb473748a3d3dc60b7c11f34e60c93519234d4c37f42e22ada559d47
         checksum/health: aff24913d801436ea469d8d374b2ddb3ec4c43ee7ab24663d5f8ff1a1b6991a9
         checksum/scripts: bb405ab6e14129d9c1652d99ffde3146c358de2ef89164a4c63bb0b1894e7537
-        checksum/secret: ba47cd700928dd29e1158d2f53d96793ffa47f50a7f25698deb6cc343a2f19dc
+        checksum/secret: 3287fa08abbdd72674120d09f5ad2bedc7de98dc80b8552c6b60eec121a56152
     spec:
       
       securityContext:
@@ -2632,6 +3353,37 @@ spec:
                 name: couchdb-svc-couchdb
                 port:
                   number: 5984
+  tls:
+    - secretName: relegatio-tls
+---
+# Source: k8s/charts/keycloak/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: keycloak
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: keycloak
+    app.kubernetes.io/version: 24.0.3
+    helm.sh/chart: keycloak-21.0.3
+    app.kubernetes.io/component: keycloak
+spec:
+  ingressClassName: "nginx"
+  rules:
+    - host: "keycloak.relegatio.localhost"
+      http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: keycloak
+                port:
+                  name: http
+  tls:
+    - secretName: relegatio-tls
 ---
 # Source: k8s/charts/mailpit/templates/ingress.yaml
 apiVersion: networking.k8s.io/v1
@@ -2658,6 +3410,8 @@ spec:
                 name: mailpit-http
                 port:
                   name: http
+  tls:
+    - secretName: relegatio-tls
 ---
 # Source: k8s/charts/rabbitmq/templates/ingress.yaml
 apiVersion: networking.k8s.io/v1
@@ -2684,27 +3438,8 @@ spec:
                 name: rabbit
                 port:
                   name: http-stats
----
-# Source: k8s/templates/nodejs.yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: frontend
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
-spec:
-  ingressClassName: nginx
-  rules:
-    - host: relegatio.localhost
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: frontend
-                port:
-                  number: 3000
+  tls:
+    - secretName: relegatio-tls
 ---
 # Source: k8s/templates/nodejs.yaml
 apiVersion: networking.k8s.io/v1
@@ -2726,6 +3461,8 @@ spec:
                 name: gateway
                 port:
                   number: 3000
+  tls:
+    - secretName: relegatio-tls
 ---
 # Source: k8s/charts/couchdb/templates/job.yaml
 apiVersion: batch/v1
@@ -2775,19 +3512,116 @@ spec:
   backoffLimit: 2
   ttlSecondsAfterFinished: 600
 ---
+# Source: k8s/charts/keycloak/templates/keycloak-config-cli-job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: keycloak-keycloak-config-cli
+  namespace: "default"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: keycloak
+    app.kubernetes.io/version: 24.0.3
+    helm.sh/chart: keycloak-21.0.3
+    app.kubernetes.io/component: keycloak-config-cli
+  annotations:
+    helm.sh/hook: post-install,post-upgrade,post-rollback
+    helm.sh/hook-delete-policy: hook-succeeded,before-hook-creation
+    helm.sh/hook-weight: "5"
+spec:
+  backoffLimit: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: release-name
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: keycloak
+        app.kubernetes.io/version: 24.0.3
+        helm.sh/chart: keycloak-21.0.3
+        app.kubernetes.io/component: keycloak-config-cli
+      annotations:
+        checksum/configuration: 78d60a5bf77f0c5b1e4ae5e0e0f64c43f9f794ba7c177ec1db58965e52757318
+    spec:
+      serviceAccountName: keycloak
+      
+      restartPolicy: Never
+      securityContext:
+        fsGroup: 1001
+        fsGroupChangePolicy: Always
+        supplementalGroups: []
+        sysctls: []
+      automountServiceAccountToken: true
+      containers:
+        - name: keycloak-config-cli
+          image: docker.io/bitnami/keycloak-config-cli:5.12.0-debian-12-r1
+          imagePullPolicy: IfNotPresent
+          command:
+            - java
+            - -jar
+            - /opt/bitnami/keycloak-config-cli/keycloak-config-cli.jar
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1001
+            runAsNonRoot: true
+            runAsUser: 1001
+            seLinuxOptions: {}
+            seccompProfile:
+              type: RuntimeDefault
+          env:
+            - name: KEYCLOAK_URL
+              value: http://keycloak-headless:8080/
+            - name: KEYCLOAK_USER
+              value: "admin"
+            - name: KEYCLOAK_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak
+                  key: admin-password
+            - name: IMPORT_FILES_LOCATIONS
+              value: /config/*
+            - name: KEYCLOAK_AVAILABILITYCHECK_ENABLED
+              value: "true"
+          volumeMounts:
+            - name: empty-dir
+              mountPath: /tmp
+              subPath: tmp-dir
+            - name: config-volume
+              mountPath: /config
+          resources:
+            limits:
+              cpu: 750m
+              ephemeral-storage: 1024Mi
+              memory: 768Mi
+            requests:
+              cpu: 500m
+              ephemeral-storage: 50Mi
+              memory: 512Mi
+      volumes:
+        - name: empty-dir
+          emptyDir: {}
+        - name: config-volume
+          configMap:
+            name: keycloak-keycloak-config-cli-configmap
+---
 # Source: k8s/templates/nodejs.yaml
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: auth-prisma-sh
+  name: auth-prisma-migrate
   annotations:
-    "helm.sh/hook": post-install,post-upgrade
-    "helm.sh/hook-weight": "5"
+    "helm.sh/hook": "post-upgrade"
+    "helm.sh/hook-weight": "0"
     "helm.sh/hook-delete-policy": hook-succeeded
 spec:
   template:
     metadata:
-      name: auth-prisma-sh
+      name: auth-prisma-migrate
     spec:
       restartPolicy: Never
       imagePullSecrets:
@@ -2797,7 +3631,7 @@ spec:
         runAsGroup: 1000
         fsGroup: 1000
       containers:
-        - name: auth-prisma-sh
+        - name: auth-prisma-migrate
           image: ghcr.io/kishieel/relegatio-auth:1.0.2
           imagePullPolicy: IfNotPresent
           env:
@@ -2817,24 +3651,64 @@ spec:
               value: "amqp://admin:admin@rabbit:5672"
             - name: REFRESH_TOKEN_EXPIRES_IN
               value: "30d"
-          command:
-            - /bin/prisma.sh
+          command: ["yarn", "prisma", "migrate", "deploy"]
           volumeMounts:
             - mountPath: /app
               name: auth-code
-            - name: auth-prisma-sh-configmap
-              mountPath: /bin/prisma.sh
-              subPath: prisma.sh
-              readOnly: true
       volumes:
         - name: auth-code
           hostPath:
             path: /volumes/microservices/auth
             type: Directory
-        - name: auth-prisma-sh-configmap
-          configMap:
-            name: auth-prisma-sh-configmap
-            defaultMode: 0777 # @todo: somehow I don't like this, check if I can set owner of this file to container user
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 30
+  activeDeadlineSeconds: 30
+---
+# Source: k8s/templates/nodejs.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: followers-couchdb-migrate
+  annotations:
+    "helm.sh/hook": "post-upgrade"
+    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      name: followers-couchdb-migrate
+    spec:
+      restartPolicy: Never
+      imagePullSecrets:
+        - name: ghcr-secret
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        - name: followers-couchdb-migrate
+          image: ghcr.io/kishieel/relegatio-followers:1.0.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: DATABASE_URL
+              value: "http://admin:admin@couchdb-svc-couchdb:5984"
+            - name: HOST
+              value: "0.0.0.0"
+            - name: PORT
+              value: "3000"
+            - name: RABBIT_HTTP_URL
+              value: "http://admin:admin@rabbit:15672"
+            - name: RABBIT_RMQ_URL
+              value: "amqp://admin:admin@rabbit:5672"
+          command: ["yarn", "couchdb:migrate"]
+          volumeMounts:
+            - mountPath: /app
+              name: followers-code
+      volumes:
+        - name: followers-code
+          hostPath:
+            path: /volumes/microservices/followers
+            type: Directory
   backoffLimit: 1
   ttlSecondsAfterFinished: 30
   activeDeadlineSeconds: 30

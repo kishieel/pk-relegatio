@@ -4,51 +4,30 @@ import { PostCreateArgs, PostUpdateArgs } from '@app/posts/post.interfaces';
 import { IPostDocument, PostDocument } from '@app/couchdb/documents/post.document';
 import { slugify } from '@app/utils/slugify.function';
 import { throwIf } from '@kishieel/relegatio-common';
-import * as cuid from 'cuid';
-import * as lodash from 'lodash';
 import { CouchdbService } from '@app/couchdb/couchdb.service';
 import { PostNotFoundException } from '@app/errors/post-not-found.exception';
 import { PostPaginationInput } from '@app/posts/gql/post-pagination.input';
 import { PostPagination } from '@app/posts/gql/post-pagination.object';
+import * as cuid from 'cuid';
+import * as lodash from 'lodash';
 
 @Injectable()
 export class PostsService {
     constructor(private readonly couchdbService: CouchdbService) {}
 
     async getPaginated(input: PostPaginationInput): Promise<PostPagination> {
-        const paging = PostPaginationInput.getPaging(input);
-        const filters = PostPaginationInput.getFilters(input);
-        const sorts = PostPaginationInput.getSorts(input);
+        const paging = PostPagination.getPaging(input);
+        const filters = PostPagination.getFilters(input);
+        const sorts = PostPagination.getSorts(input);
 
         const posts = await this.couchdbService.use<IPostDocument>('posts').find({
             selector: filters ? { $and: filters } : { _id: { $exists: true } },
             sort: sorts,
-            skip: paging?.offset,
-            limit: paging?.limit,
+            skip: paging.offset,
+            limit: paging.limit + 1,
         });
 
-        // couchdb is not able to return total count of documents
-        // this is very naive solution to address this issue
-        const total = await this.couchdbService.use<IPostDocument>('posts').find({
-            selector: filters ? { $and: filters } : { _id: { $exists: true } },
-            fields: ['_id'],
-            limit: Number.MAX_SAFE_INTEGER,
-        });
-
-        return {
-            edges: posts.docs.map((doc) => ({
-                cursor: doc._id,
-                node: PostDocument.toGraphql(doc),
-            })),
-            info: {
-                firstCursor: posts.docs[0]?._id,
-                lastCursor: posts.docs[posts.docs.length - 1]?._id,
-                hasNextPage: total.docs.length > (paging?.offset ?? 0) + posts.docs.length,
-                hasPrevPage: (paging?.offset ?? 0) > 0,
-                total: total.docs.length,
-                count: posts.docs.length,
-            },
-        };
+        return PostPagination.create(posts.docs, paging, (doc) => PostDocument.toGraphql(doc));
     }
 
     async getById(id: string): Promise<Post> {

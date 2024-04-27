@@ -110,13 +110,8 @@ enum PostOrderBy {
 }
 
 type PostPagination {
-  edges: [PostPaginationEdge!]!
-  info: PostPaginationMeta!
-}
-
-type PostPaginationEdge {
-  cursor: String!
-  node: Post!
+  data: [Post!]!
+  pageInfo: PostPaginationPageInfo!
 }
 
 input PostPaginationFilterByInput {
@@ -131,18 +126,16 @@ input PostPaginationInput {
   paging: PostPaginationPagingInput
 }
 
-type PostPaginationMeta {
-  count: Float!
-  firstCursor: String
-  hasNextPage: Boolean!
-  hasPrevPage: Boolean!
-  lastCursor: String
-  total: Float!
-}
-
 input PostPaginationOrderByInput {
   direction: PaginationOrderByDirection!
   field: PostOrderBy!
+}
+
+type PostPaginationPageInfo {
+  hasNextPage: Boolean!
+  hasPrevPage: Boolean!
+  limit: Int!
+  offset: Int!
 }
 
 input PostPaginationPagingInput {
